@@ -21,27 +21,42 @@ export function Header() {
   const [isAdmin, setIsAdmin] = useState(false)
   const [displayName, setDisplayName] = useState<string | null>(null)
   const [mobileOpen, setMobileOpen] = useState(false)
+
   const router = useRouter()
   const supabase = createClient()
 
   useEffect(() => {
-    const getUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      setUser(user)
-      if (user) {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('role, display_name')
-          .eq('id', user.id)
-          .single()
-        setIsAdmin(profile?.role === 'admin' || profile?.role === 'developer')
-        setDisplayName(profile?.display_name ?? null)
-      }
-    }
-    getUser()
+    const loadProfile = async (u: User | null) => {
+      setUser(u)
+      // важно: сразу сбрасываем, чтобы не мигало старое значение
+      setIsAdmin(false)
+      setDisplayName(null)
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null)
+      if (!u) return
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role, display_name')
+        .eq('id', u.id)
+        .single()
+
+      setIsAdmin(profile?.role === 'admin' || profile?.role === 'developer')
+      setDisplayName(profile?.display_name ?? null)
+    }
+
+    // initial load
+    ;(async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+      await loadProfile(user)
+    })()
+
+    // session changes
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      await loadProfile(session?.user ?? null)
     })
 
     return () => subscription.unsubscribe()
@@ -60,14 +75,7 @@ export function Header() {
     <header className="sticky top-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 lg:px-8">
         <Link href="/" className="flex items-center gap-2 text-lg font-bold tracking-tight text-foreground">
-          <Image
-            src="/logo.png"
-            alt="Logo"
-            width={128}
-            height={75}
-            className="h-8 w-auto"
-          />
-
+          <Image src="/logo.png" alt="Logo" width={128} height={75} className="h-8 w-auto" />
           ОПГ "Малиновка"
         </Link>
 
@@ -80,25 +88,27 @@ export function Header() {
           <Link href="/catalog" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
             Каталог
           </Link>
+
           {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="sm" className="gap-2">
                   <UserIcon className="h-4 w-4" />
-                  <span className="max-w-[120px] truncate">
-                    {displayName ?? '...'}
-                  </span>
+                  <span className="max-w-[120px] truncate">{displayName ?? '...'}</span>
                 </Button>
               </DropdownMenuTrigger>
+
               <DropdownMenuContent align="end" className="w-48">
                 <DropdownMenuItem onClick={() => router.push('/dashboard')}>
                   <LayoutDashboard className="mr-2 h-4 w-4" />
                   Мои объявления
                 </DropdownMenuItem>
+
                 <DropdownMenuItem onClick={() => router.push('/dashboard/profile')}>
                   <UserIcon className="mr-2 h-4 w-4" />
                   Профиль
                 </DropdownMenuItem>
+
                 {isAdmin && (
                   <>
                     <DropdownMenuSeparator />
@@ -108,6 +118,7 @@ export function Header() {
                     </DropdownMenuItem>
                   </>
                 )}
+
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleLogout}>
                   <LogOut className="mr-2 h-4 w-4" />
@@ -140,32 +151,67 @@ export function Header() {
       {/* Mobile nav */}
       {mobileOpen && (
         <nav className="flex flex-col gap-2 border-t border-border/50 bg-background px-4 py-4 md:hidden">
-          <Link href="/catalog" className="rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-secondary hover:text-foreground" onClick={() => setMobileOpen(false)}>
+          <Link
+            href="/catalog"
+            className="rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-secondary hover:text-foreground"
+            onClick={() => setMobileOpen(false)}
+          >
             Каталог
           </Link>
+
           {user ? (
             <>
-              <Link href="/dashboard" className="rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-secondary hover:text-foreground" onClick={() => setMobileOpen(false)}>
+              <Link
+                href="/dashboard"
+                className="rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-secondary hover:text-foreground"
+                onClick={() => setMobileOpen(false)}
+              >
                 Мои объявления
               </Link>
-              <Link href="/dashboard/profile" className="rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-secondary hover:text-foreground" onClick={() => setMobileOpen(false)}>
+
+              <Link
+                href="/dashboard/profile"
+                className="rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-secondary hover:text-foreground"
+                onClick={() => setMobileOpen(false)}
+              >
                 Профиль
               </Link>
+
               {isAdmin && (
-                <Link href="/admin" className="rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-secondary hover:text-foreground" onClick={() => setMobileOpen(false)}>
+                <Link
+                  href="/admin"
+                  className="rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-secondary hover:text-foreground"
+                  onClick={() => setMobileOpen(false)}
+                >
                   Админ-панель
                 </Link>
               )}
-              <button onClick={() => { handleLogout(); setMobileOpen(false) }} className="rounded-md px-3 py-2 text-left text-sm text-destructive hover:bg-secondary">
+
+              <button
+                onClick={() => {
+                  handleLogout()
+                  setMobileOpen(false)
+                }}
+                className="rounded-md px-3 py-2 text-left text-sm text-destructive hover:bg-secondary"
+              >
                 Выйти
               </button>
             </>
           ) : (
             <div className="flex flex-col gap-2">
-              <Link href="/auth/login" className="rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-secondary hover:text-foreground" onClick={() => setMobileOpen(false)}>
+              <Link
+                href="/auth/login"
+                className="rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-secondary hover:text-foreground"
+                onClick={() => setMobileOpen(false)}
+              >
                 Войти
               </Link>
-              <Link href="/auth/sign-up" className="rounded-md px-3 py-2 text-sm text-foreground bg-primary text-primary-foreground text-center" onClick={() => setMobileOpen(false)}>
+
+              <Link
+                href="/auth/sign-up"
+                className="rounded-md px-3 py-2 text-sm text-foreground bg-primary text-primary-foreground text-center"
+                onClick={() => setMobileOpen(false)}
+              >
                 Регистрация
               </Link>
             </div>
