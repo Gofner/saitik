@@ -12,8 +12,8 @@ import {
   Car,
 } from "lucide-react";
 
-/** Простая иконка "карта/талисман" под категорию */
-function TalismanCardIcon({ className }: { className?: string }) {
+
+function TalismansIcon({ className }: { className?: string }) {
   return (
     <svg
       className={className}
@@ -22,29 +22,47 @@ function TalismanCardIcon({ className }: { className?: string }) {
       xmlns="http://www.w3.org/2000/svg"
       aria-hidden="true"
     >
-      {/* card */}
-      <rect
-        x="5"
-        y="3.5"
-        width="14"
-        height="17"
-        rx="2.5"
-        stroke="currentColor"
-        strokeWidth="1.6"
-      />
-      {/* inner border */}
-      <rect
-        x="7"
-        y="5.5"
-        width="10"
-        height="13"
-        rx="1.8"
-        stroke="currentColor"
-        strokeWidth="1.2"
-        opacity="0.7"
-      />
+      <g transform="translate(12 12) scale(1.5 2) translate(-12 -12)">
+        <rect
+          x="6"
+          y="6"
+          width="12"
+          height="9"
+          rx="2.2"
+          stroke="currentColor"
+          strokeWidth="1.6"
+          vectorEffect="non-scaling-stroke"
+        />
+        <rect
+          x="7"
+          y="7"
+          width="10"
+          height="7"
+          rx="1.8"
+          stroke="currentColor"
+          strokeWidth="1.2"
+          opacity="0.7"
+          vectorEffect="non-scaling-stroke"
+        />
 
-      {/* emblem */}
+        {/* уголки */}
+        <path
+          d="M8.2 8.2h1.6"
+          stroke="currentColor"
+          strokeWidth="1.4"
+          strokeLinecap="round"
+          vectorEffect="non-scaling-stroke"
+        />
+        <path
+          d="M14.2 13.6h1.6"
+          stroke="currentColor"
+          strokeWidth="1.4"
+          strokeLinecap="round"
+          vectorEffect="non-scaling-stroke"
+        />
+      </g>
+
+      {/*  */}
       <circle
         cx="12"
         cy="12"
@@ -64,20 +82,6 @@ function TalismanCardIcon({ className }: { className?: string }) {
         strokeWidth="1.1"
         strokeLinecap="round"
       />
-
-      {/* small corner accents */}
-      <path
-        d="M8.3 8.0h1.6"
-        stroke="currentColor"
-        strokeWidth="1.4"
-        strokeLinecap="round"
-      />
-      <path
-        d="M14.1 16.0h1.6"
-        stroke="currentColor"
-        strokeWidth="1.4"
-        strokeLinecap="round"
-      />
     </svg>
   );
 }
@@ -88,20 +92,13 @@ const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
   package: Package,
   wrench: Wrench,
   zap: Zap,
-
-  // ВАЖНО:
-  // Если у тебя категория "Талисманы/Лаки" сейчас использует icon="layers",
-  // то замени Layers на нашу карту:
-  layers: TalismanCardIcon,
-
+  layers: Layers,
   home: Home,
   briefcase: Briefcase,
   spade: Spade,
   car: Car,
 
-  // Если вдруг у тебя будет отдельный ключ, например "talisman",
-  // можешь тоже добавить:
-  talisman: TalismanCardIcon,
+  talismans: TalismansIcon,
 };
 
 export function CategoryIcon({
