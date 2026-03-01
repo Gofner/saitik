@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
+import Image from 'next/image'
 import {
   Card,
   CardContent,
@@ -48,9 +49,14 @@ export default function LoginPage() {
       <div className="w-full max-w-sm">
         <div className="mb-8 text-center">
           <Link href="/" className="inline-flex items-center gap-2 text-lg font-bold text-foreground">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-foreground text-background text-sm font-black">
-              G
-            </div>
+            <Image
+              src="/logo.png"
+              alt="Logo"
+              width={128}
+              height={75}
+              className="h-8 w-auto"
+           />
+            
             ОПГ "Малиновка"
           </Link>
         </div>
