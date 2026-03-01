@@ -86,7 +86,7 @@ export function Header() {
                 <Button variant="ghost" size="sm" className="gap-2">
                   <UserIcon className="h-4 w-4" />
                   <span className="max-w-[120px] truncate">
-                    {displayName ?? user.email?.split('@')[0]}
+                    {displayName ?? '...'}
                   </span>
                 </Button>
               </DropdownMenuTrigger>
