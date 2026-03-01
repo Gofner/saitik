@@ -19,7 +19,7 @@ import { Menu, X, User as UserIcon, LogOut, LayoutDashboard, Shield } from 'luci
 export function Header() {
   const [user, setUser] = useState<User | null>(null)
   const [isAdmin, setIsAdmin] = useState(false)
-  const [displayName, setDisplayName] = useState<string>('')
+  const [displayName, setDisplayName] = useState<string | null>(null)
   const [profileLoaded, setProfileLoaded] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
 
