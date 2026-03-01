@@ -51,11 +51,15 @@ export function Header() {
     }
 
     ;(async () => {
-      const { data: { user } } = await supabase.auth.getUser()
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
       await loadProfile(user)
     })()
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (_event, session) => {
       await loadProfile(session?.user ?? null)
     })
 
@@ -96,7 +100,7 @@ export function Header() {
                 <Button variant="ghost" size="sm" className="gap-2">
                   <UserIcon className="h-4 w-4" />
                   <span className="max-w-[120px] truncate">
-                    {profileLoaded ? (displayName ?? '') : ''}
+                    {profileLoaded ? (displayName ?? '...') : '...'}
                   </span>
                 </Button>
               </DropdownMenuTrigger>
