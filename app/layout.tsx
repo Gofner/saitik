@@ -8,8 +8,8 @@ const _inter = Inter({ subsets: ['latin', 'cyrillic'] })
 const _geistMono = Geist_Mono({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'ОПГ "Малиновка"  - Торговая площадка игровых товаров',
-  description: 'Покупайте и продавайте игровые аккаунты, валюту, предметы и услуги на безопасной площадке',
+  title: 'ОПГ "Малиновка"  - Торговая площадка игровых предметов',
+  description: 'Покупайте и продавайте предметы и имущество игры Малиновка за виртуальную валюту',
   generator: 'v0.app',
   icons: {
     icon: [
