@@ -17,71 +17,28 @@ function TalismansIcon({ className }: { className?: string }) {
   return (
     <svg
       className={className}
-      viewBox="0 0 24 24"
+      viewBox="0 0 36 48"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       aria-hidden="true"
     >
-      <g transform="translate(12 12) scale(1.5 2) translate(-12 -12)">
-        <rect
-          x="6"
-          y="6"
-          width="12"
-          height="9"
-          rx="2.2"
-          stroke="currentColor"
-          strokeWidth="1.6"
-          vectorEffect="non-scaling-stroke"
-        />
-        <rect
-          x="7"
-          y="7"
-          width="10"
-          height="7"
-          rx="1.8"
-          stroke="currentColor"
-          strokeWidth="1.2"
-          opacity="0.7"
-          vectorEffect="non-scaling-stroke"
-        />
+      {/* card */}
+      <rect x="3" y="3" width="30" height="42" rx="5" stroke="currentColor" strokeWidth="2" />
+      {/* inner border */}
+      <rect x="6" y="6" width="24" height="36" rx="3.5" stroke="currentColor" strokeWidth="1.5" opacity="0.7" />
 
-        {/* уголки */}
-        <path
-          d="M8.2 8.2h1.6"
-          stroke="currentColor"
-          strokeWidth="1.4"
-          strokeLinecap="round"
-          vectorEffect="non-scaling-stroke"
-        />
-        <path
-          d="M14.2 13.6h1.6"
-          stroke="currentColor"
-          strokeWidth="1.4"
-          strokeLinecap="round"
-          vectorEffect="non-scaling-stroke"
-        />
-      </g>
-
-      {/*  */}
-      <circle
-        cx="12"
-        cy="12"
-        r="3.2"
-        stroke="currentColor"
-        strokeWidth="1.6"
-      />
+      {/* emblem */}
+      <circle cx="18" cy="24" r="6.5" stroke="currentColor" strokeWidth="2" />
       <path
-        d="M11.1 12.2c.35-.55.85-.8 1.25-.55.42.25.42.75.1 1.15-.25.3-.7.55-1.35.75-.65-.2-1.1-.45-1.35-.75-.32-.4-.32-.9.1-1.15.4-.25.9 0 1.25.55Z"
+        d="M18 19.2l1.4 3.6 3.8.2-3 2.3 1.1 3.8-3.3-2-3.3 2 1.1-3.8-3-2.3 3.8-.2 1.4-3.6Z"
         stroke="currentColor"
-        strokeWidth="1.1"
+        strokeWidth="1.4"
         strokeLinejoin="round"
       />
-      <path
-        d="M12 14.4v1.6"
-        stroke="currentColor"
-        strokeWidth="1.1"
-        strokeLinecap="round"
-      />
+
+      {/* small corner accents */}
+      <path d="M9 13h4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" opacity="0.8" />
+      <path d="M23 35h4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" opacity="0.8" />
     </svg>
   );
 }
