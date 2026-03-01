@@ -20,6 +20,7 @@ export function Header() {
   const [user, setUser] = useState<User | null>(null)
   const [isAdmin, setIsAdmin] = useState(false)
   const [displayName, setDisplayName] = useState<string | null>(null)
+  const [profileLoaded, setProfileLoaded] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
 
   const router = useRouter()
@@ -27,12 +28,16 @@ export function Header() {
 
   useEffect(() => {
     const loadProfile = async (u: User | null) => {
+      setProfileLoaded(false)
+
       setUser(u)
-      // важно: сразу сбрасываем, чтобы не мигало старое значение
       setIsAdmin(false)
       setDisplayName(null)
 
-      if (!u) return
+      if (!u) {
+        setProfileLoaded(true)
+        return
+      }
 
       const { data: profile } = await supabase
         .from('profiles')
@@ -42,20 +47,15 @@ export function Header() {
 
       setIsAdmin(profile?.role === 'admin' || profile?.role === 'developer')
       setDisplayName(profile?.display_name ?? null)
+      setProfileLoaded(true)
     }
 
-    // initial load
     ;(async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
+      const { data: { user } } = await supabase.auth.getUser()
       await loadProfile(user)
     })()
 
-    // session changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       await loadProfile(session?.user ?? null)
     })
 
@@ -67,6 +67,7 @@ export function Header() {
     setUser(null)
     setIsAdmin(false)
     setDisplayName(null)
+    setProfileLoaded(false)
     router.push('/')
     router.refresh()
   }
@@ -94,7 +95,9 @@ export function Header() {
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="sm" className="gap-2">
                   <UserIcon className="h-4 w-4" />
-                  <span className="max-w-[120px] truncate">{displayName ?? '...'}</span>
+                  <span className="max-w-[120px] truncate">
+                    {profileLoaded ? (displayName ?? '') : ''}
+                  </span>
                 </Button>
               </DropdownMenuTrigger>
 
