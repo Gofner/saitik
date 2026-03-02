@@ -68,7 +68,7 @@ export function Header() {
             className="h-8 w-auto"
           />
 
-          ОПГ "Малиновка"
+          MALMARKET
         </Link>
 
         {/* Desktop nav */}
