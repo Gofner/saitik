@@ -91,7 +91,7 @@ export default function ResetPasswordPage() {
         <div className="mb-8 text-center">
           <Link href="/" className="inline-flex items-center gap-2 text-lg font-bold text-foreground">
             <Image src="/logo.png" alt="Logo" width={128} height={75} className="h-8 w-auto" />
-            ОПГ "Малиновка"
+            MALMARKET"
           </Link>
         </div>
 
