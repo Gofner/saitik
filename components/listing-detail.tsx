@@ -1,3 +1,5 @@
+'use client'
+
 import { useState } from 'react'
 import Link from 'next/link'
 import { formatPrice, type Listing, type Profile } from '@/lib/types'
