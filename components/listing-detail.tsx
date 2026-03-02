@@ -1,5 +1,3 @@
-'use client'
-
 import { useState } from 'react'
 import Link from 'next/link'
 import { formatPrice, type Listing, type Profile } from '@/lib/types'
@@ -15,9 +13,22 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import { CategoryIcon } from '@/components/category-icon'
-import { ChevronLeft, ChevronRight, ImageIcon, MessageCircle, Send } from 'lucide-react'
+import DeleteListingButton from '@/components/delete-listing-button'
+import {
+  ChevronLeft,
+  ChevronRight,
+  ImageIcon,
+  MessageCircle,
+  Send,
+} from 'lucide-react'
 
-export function ListingDetail({ listing, profile }: { listing: Listing; profile: Profile | null }) {
+export function ListingDetail({
+  listing,
+  profile,
+}: {
+  listing: Listing
+  profile: Profile | null
+}) {
   const [currentPhoto, setCurrentPhoto] = useState(0)
   const photos = listing.photos ?? []
 
@@ -25,7 +36,7 @@ export function ListingDetail({ listing, profile }: { listing: Listing; profile:
     <div className="mx-auto max-w-5xl px-4 py-8 lg:px-8">
       {/* Breadcrumb */}
       <div className="mb-6 flex items-center gap-2 text-sm text-muted-foreground">
-        <Link href="/catalog" className="hover:text-foreground transition-colors">
+        <Link href="/catalog" className="transition-colors hover:text-foreground">
           Каталог
         </Link>
         <span>/</span>
@@ -33,7 +44,7 @@ export function ListingDetail({ listing, profile }: { listing: Listing; profile:
           <>
             <Link
               href={`/catalog?category=${listing.category.slug}`}
-              className="hover:text-foreground transition-colors"
+              className="transition-colors hover:text-foreground"
             >
               {listing.category.name}
             </Link>
@@ -57,7 +68,9 @@ export function ListingDetail({ listing, profile }: { listing: Listing; profile:
                 {photos.length > 1 && (
                   <>
                     <button
-                      onClick={() => setCurrentPhoto((p) => (p - 1 + photos.length) % photos.length)}
+                      onClick={() =>
+                        setCurrentPhoto((p) => (p - 1 + photos.length) % photos.length)
+                      }
                       className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-background/80 p-2 backdrop-blur-sm transition-colors hover:bg-background"
                       aria-label="Предыдущее фото"
                     >
@@ -75,7 +88,9 @@ export function ListingDetail({ listing, profile }: { listing: Listing; profile:
                         <button
                           key={i}
                           onClick={() => setCurrentPhoto(i)}
-                          className={`h-2 w-2 rounded-full transition-colors ${i === currentPhoto ? 'bg-foreground' : 'bg-foreground/30'}`}
+                          className={`h-2 w-2 rounded-full transition-colors ${
+                            i === currentPhoto ? 'bg-foreground' : 'bg-foreground/30'
+                          }`}
                           aria-label={`Фото ${i + 1}`}
                         />
                       ))}
@@ -97,7 +112,11 @@ export function ListingDetail({ listing, profile }: { listing: Listing; profile:
                 <button
                   key={i}
                   onClick={() => setCurrentPhoto(i)}
-                  className={`flex-shrink-0 h-16 w-16 overflow-hidden rounded-md border transition-all ${i === currentPhoto ? 'border-foreground' : 'border-border/50 opacity-60 hover:opacity-100'}`}
+                  className={`h-16 w-16 flex-shrink-0 overflow-hidden rounded-md border transition-all ${
+                    i === currentPhoto
+                      ? 'border-foreground'
+                      : 'border-border/50 opacity-60 hover:opacity-100'
+                  }`}
                 >
                   <img src={photo} alt="" className="h-full w-full object-cover" />
                 </button>
@@ -109,14 +128,20 @@ export function ListingDetail({ listing, profile }: { listing: Listing; profile:
         {/* Info - 2 cols */}
         <div className="flex flex-col gap-4 lg:col-span-2">
           <div>
-            <div className="mb-2 flex items-center gap-2">
-              {listing.category && (
-                <Badge variant="secondary" className="gap-1">
-                  <CategoryIcon icon={listing.category.icon} className="h-3 w-3" />
-                  {listing.category.name}
-                </Badge>
-              )}
+            {/* Category badge + delete button */}
+            <div className="mb-2 flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                {listing.category && (
+                  <Badge variant="secondary" className="gap-1">
+                    <CategoryIcon icon={listing.category.icon} className="h-3 w-3" />
+                    {listing.category.name}
+                  </Badge>
+                )}
+              </div>
+
+              <DeleteListingButton listingId={String(listing.id)} />
             </div>
+
             <h1 className="text-2xl font-bold text-foreground">{listing.title}</h1>
             <p className="mt-1 text-sm text-muted-foreground">
               {listing.server ? `Сервер ${listing.server}` : ''}
@@ -142,7 +167,11 @@ export function ListingDetail({ listing, profile }: { listing: Listing; profile:
                       {profile.display_name || 'Продавец'}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {'На площадке с '}{new Date(profile.created_at).toLocaleDateString('ru-RU', { month: 'long', year: 'numeric' })}
+                      {'На площадке с '}
+                      {new Date(profile.created_at).toLocaleDateString('ru-RU', {
+                        month: 'long',
+                        year: 'numeric',
+                      })}
                     </p>
                   </div>
                 </div>
@@ -187,7 +216,7 @@ export function ListingDetail({ listing, profile }: { listing: Listing; profile:
                   </div>
                 ) : null}
                 {!profile?.telegram && !profile?.discord && (
-                  <p className="text-sm text-muted-foreground text-center py-4">
+                  <p className="py-4 text-center text-sm text-muted-foreground">
                     Продавец не указал контактные данные
                   </p>
                 )}
@@ -202,7 +231,7 @@ export function ListingDetail({ listing, profile }: { listing: Listing; profile:
                 <CardTitle className="text-base">Описание</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-sm leading-relaxed text-muted-foreground whitespace-pre-line">
+                <p className="whitespace-pre-line text-sm leading-relaxed text-muted-foreground">
                   {listing.description}
                 </p>
               </CardContent>
