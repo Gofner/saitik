@@ -3,8 +3,14 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { createClient } from '@/utils/supabase/client'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { createClient } from '@/lib/supabase/client'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
@@ -24,7 +30,6 @@ export default function ForgotPasswordPage() {
     setErr(null)
 
     const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-      // сюда придёт пользователь после клика по письму
       redirectTo: `${location.origin}/auth/reset-password`,
     })
 
@@ -65,6 +70,7 @@ export default function ForgotPasswordPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
+                  className="bg-secondary/50 border-border/50"
                 />
               </div>
 
@@ -77,7 +83,7 @@ export default function ForgotPasswordPage() {
             {err && <p className="text-sm text-destructive">{err}</p>}
 
             <div className="text-center text-sm text-muted-foreground">
-              <Link href="/auth/login" className="underline underline-offset-4 hover:underline">
+              <Link href="/auth/login" className="text-foreground underline underline-offset-4">
                 Вернуться ко входу
               </Link>
             </div>
