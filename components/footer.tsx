@@ -46,7 +46,7 @@ export function Footer() {
         </nav>
 
         {/* Right */}
-        <p className="text-muted-foreground/60">{'ОПГ "Малиновка" \u00A9 2026'}</p>
+        <p className="text-muted-foreground/60">{'MALMARKET \u00A9 2026'}</p>
       </div>
     </footer>
   )
