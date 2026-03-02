@@ -57,7 +57,7 @@ export default function LoginPage() {
               className="h-8 w-auto"
             />
 
-            ОПГ "Малиновка"
+            MALMARKET
           </Link>
         </div>
         <Card className="border-border/50 bg-card">
