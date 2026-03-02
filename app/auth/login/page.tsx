@@ -55,8 +55,8 @@ export default function LoginPage() {
               width={128}
               height={75}
               className="h-8 w-auto"
-           />
-            
+            />
+
             ОПГ "Малиновка"
           </Link>
         </div>
@@ -82,8 +82,20 @@ export default function LoginPage() {
                     className="bg-secondary/50 border-border/50"
                   />
                 </div>
+
                 <div className="grid gap-2">
-                  <Label htmlFor="password">Пароль</Label>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="password">Пароль</Label>
+
+                    
+                    <Link
+                      href="/auth/forgot-password"
+                      className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-4"
+                    >
+                      Забыли пароль?
+                    </Link>
+                  </div>
+
                   <Input
                     id="password"
                     type="password"
@@ -93,11 +105,14 @@ export default function LoginPage() {
                     className="bg-secondary/50 border-border/50"
                   />
                 </div>
+
                 {error && <p className="text-sm text-destructive">{error}</p>}
+
                 <Button type="submit" className="w-full" disabled={isLoading}>
                   {isLoading ? 'Вход...' : 'Войти'}
                 </Button>
               </div>
+
               <div className="mt-4 text-center text-sm text-muted-foreground">
                 {'Нет аккаунта? '}
                 <Link
