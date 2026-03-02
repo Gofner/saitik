@@ -22,50 +22,43 @@ export default function ResetPasswordPage() {
 
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
+  const [ready, setReady] = useState(false)
   const [msg, setMsg] = useState<string | null>(null)
   const [err, setErr] = useState<string | null>(null)
-  const [ready, setReady] = useState(false)
 
-  // 1) Подхватываем сессию из ссылки письма (hash или code)
+  // 1) Подхватываем token_hash из URL и создаём сессию через verifyOtp
   useEffect(() => {
     const init = async () => {
       setErr(null)
+      setMsg(null)
 
-      try {
-        // Вариант A: после verify Supabase часто редиректит с токенами в hash:
-        // /auth/reset-password#access_token=...&refresh_token=...&type=recovery
-        const hash = window.location.hash?.replace(/^#/, '') ?? ''
-        const hashParams = new URLSearchParams(hash)
-        const access_token = hashParams.get('access_token')
-        const refresh_token = hashParams.get('refresh_token')
+      const url = new URL(window.location.href)
+      const token_hash = url.searchParams.get('token_hash')
+      const type = url.searchParams.get('type') // ожидаем "recovery"
 
-        if (access_token && refresh_token) {
-          const { error } = await supabase.auth.setSession({ access_token, refresh_token })
-          // чистим hash, чтобы не светить токены в адресной строке
-          window.history.replaceState({}, document.title, window.location.pathname + window.location.search)
-          if (error) throw error
-        } else {
-          // Вариант B: code-based flow:
-          // /auth/reset-password?code=...
-          const url = new URL(window.location.href)
-          const code = url.searchParams.get('code')
-          if (code) {
-            const { error } = await supabase.auth.exchangeCodeForSession(code)
-            url.searchParams.delete('code')
-            window.history.replaceState({}, document.title, url.pathname + url.search)
-            if (error) throw error
-          }
-        }
-
-        const { data } = await supabase.auth.getSession()
-        if (!data.session) {
-          setErr('Сессия для сброса пароля не найдена. Откройте ссылку из письма заново или запросите сброс ещё раз.')
-        }
-      } catch (e: unknown) {
-        setErr(e instanceof Error ? e.message : 'Не удалось подтвердить ссылку сброса пароля.')
-      } finally {
+      if (!token_hash || type !== 'recovery') {
+        setErr('Неверная или устаревшая ссылка. Запросите сброс пароля заново.')
         setReady(true)
+        return
       }
+
+      const { error } = await supabase.auth.verifyOtp({
+        token_hash,
+        type: 'recovery',
+      })
+
+      // Скрываем токен из адресной строки
+      url.searchParams.delete('token_hash')
+      url.searchParams.delete('type')
+      window.history.replaceState({}, document.title, url.pathname + url.search)
+
+      if (error) {
+        setErr(error.message)
+        setReady(true)
+        return
+      }
+
+      setReady(true)
     }
 
     init()
@@ -77,6 +70,7 @@ export default function ResetPasswordPage() {
     e.preventDefault()
     setLoading(true)
     setMsg(null)
+    setErr(null)
 
     const { error } = await supabase.auth.updateUser({ password })
 
@@ -87,7 +81,6 @@ export default function ResetPasswordPage() {
       return
     }
 
-    setErr(null)
     setMsg('Пароль обновлён. Сейчас перенаправим на вход…')
     setTimeout(() => router.push('/auth/login'), 900)
   }
@@ -134,6 +127,7 @@ export default function ResetPasswordPage() {
                 </form>
 
                 {msg && <p className="text-sm text-green-600">{msg}</p>}
+
                 {err && (
                   <div className="space-y-2">
                     <p className="text-sm text-destructive">{err}</p>
