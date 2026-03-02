@@ -8,13 +8,13 @@ const inter = Inter({ subsets: ["latin", "cyrillic"] });
 const geistMono = Geist_Mono({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: 'ОПГ "Малиновка" — Торговая площадка игровых предметов',
+  title: 'MALMARKET" — Торговая площадка игровых предметов',
   description:
     "Покупайте и продавайте предметы и имущество игры Малиновка за виртуальную валюту",
   generator: "v0.app",
   metadataBase: new URL("https://www.opgmalmarket.com"),
   openGraph: {
-    title: 'ОПГ "Малиновка" — Торговая площадка игровых предметов',
+    title: 'MALMARKET" — Торговая площадка игровых предметов',
     description:
       "Покупайте и продавайте предметы и имущество игры Малиновка за виртуальную валюту",
     url: "https://www.opgmalmarket.com/",
@@ -25,13 +25,13 @@ export const metadata: Metadata = {
         url: "/og.png",
         width: 1200,
         height: 630,
-        alt: 'ОПГ "Малиновка"',
+        alt: 'MALMARKET"',
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: 'ОПГ "Малиновка" — Торговая площадка игровых предметов',
+    title: 'MALMARKET" — Торговая площадка игровых предметов',
     description:
       "Покупайте и продавайте предметы и имущество игры Малиновка за виртуальную валюту",
     images: ["/og.png"],
