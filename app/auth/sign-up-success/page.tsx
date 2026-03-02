@@ -22,7 +22,7 @@ export default function SignUpSuccessPage() {
               height={75}
               className="h-8 w-auto"
             />
-            ОПГ "Малиновка"
+            MALMARKET
           </Link>
         </div>
 
