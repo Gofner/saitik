@@ -3,18 +3,16 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { useRouter } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 
-export default function ResetPasswordPage() {
+export default function ForgotPasswordPage() {
   const supabase = createClient()
-  const router = useRouter()
 
-  const [password, setPassword] = useState('')
+  const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
   const [msg, setMsg] = useState<string | null>(null)
   const [err, setErr] = useState<string | null>(null)
@@ -25,7 +23,10 @@ export default function ResetPasswordPage() {
     setMsg(null)
     setErr(null)
 
-    const { error } = await supabase.auth.updateUser({ password })
+    const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+      // сюда придёт пользователь после клика по письму
+      redirectTo: `${location.origin}/auth/reset-password`,
+    })
 
     setLoading(false)
 
@@ -34,8 +35,7 @@ export default function ResetPasswordPage() {
       return
     }
 
-    setMsg('Пароль обновлён. Сейчас перенаправим на вход…')
-    setTimeout(() => router.push('/sign-in'), 900)
+    setMsg('Если аккаунт существует — мы отправили письмо для сброса пароля.')
   }
 
   return (
@@ -50,31 +50,37 @@ export default function ResetPasswordPage() {
 
         <Card className="border-border/50 bg-card">
           <CardHeader>
-            <CardTitle className="text-2xl">Новый пароль</CardTitle>
-            <CardDescription>Придумайте новый пароль для аккаунта.</CardDescription>
+            <CardTitle className="text-2xl">Сброс пароля</CardTitle>
+            <CardDescription>Введите email — мы пришлём ссылку для сброса.</CardDescription>
           </CardHeader>
 
           <CardContent className="space-y-4">
             <form onSubmit={onSubmit} className="space-y-3">
               <div className="space-y-2">
-                <Label htmlFor="password">Пароль</Label>
+                <Label htmlFor="email">Email</Label>
                 <Input
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  minLength={6}
+                  id="email"
+                  type="email"
+                  placeholder="mail@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   required
                 />
               </div>
 
               <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? 'Сохраняем…' : 'Сохранить пароль'}
+                {loading ? 'Отправляем…' : 'Отправить ссылку'}
               </Button>
             </form>
 
             {msg && <p className="text-sm text-green-600">{msg}</p>}
             {err && <p className="text-sm text-destructive">{err}</p>}
+
+            <div className="text-center text-sm text-muted-foreground">
+              <Link href="/auth/login" className="underline underline-offset-4 hover:underline">
+                Вернуться ко входу
+              </Link>
+            </div>
           </CardContent>
         </Card>
       </div>
