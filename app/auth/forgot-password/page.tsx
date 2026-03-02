@@ -1,47 +1,41 @@
 'use client'
 
-import { createClient } from '@/lib/supabase/client'
-import { Button } from '@/components/ui/button'
-import Image from 'next/image'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import { useState } from 'react'
+import Link from 'next/link'
+import Image from 'next/image'
+import { useRouter } from 'next/navigation'
+import { createClient } from '@/utils/supabase/client'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
+import { Label } from '@/components/ui/label'
 
-export default function LoginPage() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [error, setError] = useState<string | null>(null)
-  const [isLoading, setIsLoading] = useState(false)
+export default function ResetPasswordPage() {
+  const supabase = createClient()
   const router = useRouter()
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault()
-    const supabase = createClient()
-    setIsLoading(true)
-    setError(null)
+  const [password, setPassword] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [msg, setMsg] = useState<string | null>(null)
+  const [err, setErr] = useState<string | null>(null)
 
-    try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      })
-      if (error) throw error
-      router.push('/dashboard')
-      router.refresh()
-    } catch (error: unknown) {
-      setError(error instanceof Error ? error.message : 'Произошла ошибка')
-    } finally {
-      setIsLoading(false)
+  async function onSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    setLoading(true)
+    setMsg(null)
+    setErr(null)
+
+    const { error } = await supabase.auth.updateUser({ password })
+
+    setLoading(false)
+
+    if (error) {
+      setErr(error.message)
+      return
     }
+
+    setMsg('Пароль обновлён. Сейчас перенаправим на вход…')
+    setTimeout(() => router.push('/sign-in'), 900)
   }
 
   return (
@@ -49,80 +43,38 @@ export default function LoginPage() {
       <div className="w-full max-w-sm">
         <div className="mb-8 text-center">
           <Link href="/" className="inline-flex items-center gap-2 text-lg font-bold text-foreground">
-            <Image
-              src="/logo.png"
-              alt="Logo"
-              width={128}
-              height={75}
-              className="h-8 w-auto"
-            />
-
+            <Image src="/logo.png" alt="Logo" width={128} height={75} className="h-8 w-auto" />
             ОПГ "Малиновка"
           </Link>
         </div>
+
         <Card className="border-border/50 bg-card">
           <CardHeader>
-            <CardTitle className="text-2xl">Вход</CardTitle>
-            <CardDescription>
-              Введите email и пароль для входа в аккаунт
-            </CardDescription>
+            <CardTitle className="text-2xl">Новый пароль</CardTitle>
+            <CardDescription>Придумайте новый пароль для аккаунта.</CardDescription>
           </CardHeader>
-          <CardContent>
-            <form onSubmit={handleLogin}>
-              <div className="flex flex-col gap-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="mail@example.com"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="bg-secondary/50 border-border/50"
-                  />
-                </div>
 
-                <div className="grid gap-2">
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="password">Пароль</Label>
-
-                    
-                    <Link
-                      href="/auth/forgot-password"
-                      className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-4"
-                    >
-                      Забыли пароль?
-                    </Link>
-                  </div>
-
-                  <Input
-                    id="password"
-                    type="password"
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="bg-secondary/50 border-border/50"
-                  />
-                </div>
-
-                {error && <p className="text-sm text-destructive">{error}</p>}
-
-                <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? 'Вход...' : 'Войти'}
-                </Button>
+          <CardContent className="space-y-4">
+            <form onSubmit={onSubmit} className="space-y-3">
+              <div className="space-y-2">
+                <Label htmlFor="password">Пароль</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  minLength={6}
+                  required
+                />
               </div>
 
-              <div className="mt-4 text-center text-sm text-muted-foreground">
-                {'Нет аккаунта? '}
-                <Link
-                  href="/auth/sign-up"
-                  className="text-foreground underline underline-offset-4"
-                >
-                  Зарегистрироваться
-                </Link>
-              </div>
+              <Button type="submit" className="w-full" disabled={loading}>
+                {loading ? 'Сохраняем…' : 'Сохранить пароль'}
+              </Button>
             </form>
+
+            {msg && <p className="text-sm text-green-600">{msg}</p>}
+            {err && <p className="text-sm text-destructive">{err}</p>}
           </CardContent>
         </Card>
       </div>
