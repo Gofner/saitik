@@ -59,7 +59,7 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 lg:px-8">
-        <Link href="/" className="flex items-center gap-2 text-lg font-bold tracking-tight text-foreground">
+        <Link href="/" className="flex items-center gap-2 text-lg font-semibold tracking-tight text-foreground">
           <Image
             src="/logo.png"
             alt="Logo"
