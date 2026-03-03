@@ -1,7 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { formatPrice, type Listing, type Profile } from '@/lib/types'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -14,10 +15,59 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog'
 import { CategoryIcon } from '@/components/category-icon'
-import { ChevronLeft, ChevronRight, ImageIcon, MessageCircle, Send } from 'lucide-react'
+import { ChevronLeft, ChevronRight, ImageIcon, MessageCircle, Send, Trash2 } from 'lucide-react'
+import { createClient } from '@/lib/supabase/client'
 
 export function ListingDetail({ listing, profile }: { listing: Listing; profile: Profile | null }) {
+  const router = useRouter()
+  const [isAdmin, setIsAdmin] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const supabase = createClient()
+
+  useEffect(() => {
+    const checkAdmin = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+
+      const { data: userProfile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single()
+
+      setIsAdmin(userProfile?.role === 'admin' || userProfile?.role === 'developer')
+    }
+    checkAdmin()
+  }, [supabase])
+
+  const handleDelete = async () => {
+    setIsDeleting(true)
+    try {
+      const { error } = await supabase
+        .from('listings')
+        .delete()
+        .eq('id', listing.id)
+
+      if (error) throw error
+      router.push('/catalog')
+      router.refresh()
+    } catch (error) {
+      console.error('Delete error:', error)
+      setIsDeleting(false)
+    }
+  }
   const [currentPhoto, setCurrentPhoto] = useState(0)
   const photos = listing.photos ?? []
 
@@ -109,12 +159,38 @@ export function ListingDetail({ listing, profile }: { listing: Listing; profile:
         {/* Info - 2 cols */}
         <div className="flex flex-col gap-4 lg:col-span-2">
           <div>
-            <div className="mb-2 flex items-center gap-2">
-              {listing.category && (
-                <Badge variant="secondary" className="gap-1">
-                  <CategoryIcon icon={listing.category.icon} className="h-3 w-3" />
-                  {listing.category.name}
-                </Badge>
+            <div className="mb-2 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                {listing.category && (
+                  <Badge variant="secondary" className="gap-1">
+                    <CategoryIcon icon={listing.category.icon} className="h-3 w-3" />
+                    {listing.category.name}
+                  </Badge>
+                )}
+              </div>
+              {isAdmin && (
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="destructive" size="sm" className="gap-1.5" disabled={isDeleting}>
+                      <Trash2 className="h-3.5 w-3.5" />
+                      Удалить
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Удалить объявление?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Это действие нельзя отменить. Объявление "{listing.title}" будет удалено навсегда.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Отмена</AlertDialogCancel>
+                      <AlertDialogAction onClick={handleDelete} disabled={isDeleting}>
+                        {isDeleting ? 'Удаление...' : 'Удалить'}
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               )}
             </div>
             <h1 className="text-2xl font-bold text-foreground">{listing.title}</h1>
@@ -197,12 +273,12 @@ export function ListingDetail({ listing, profile }: { listing: Listing; profile:
 
           {/* Description */}
           {listing.description && (
-            <Card className="border-border/50 bg-card">
+            <Card className="border-border/50 bg-card overflow-hidden">
               <CardHeader className="pb-3">
                 <CardTitle className="text-base">Описание</CardTitle>
               </CardHeader>
-              <CardContent>
-                <p className="text-sm leading-relaxed text-muted-foreground whitespace-pre-line">
+              <CardContent className="overflow-hidden">
+                <p className="text-sm leading-relaxed text-muted-foreground whitespace-pre-line break-all">
                   {listing.description}
                 </p>
               </CardContent>
