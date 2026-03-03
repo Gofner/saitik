@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import type { Category, Listing, ListingItem } from '@/lib/types'
@@ -16,10 +16,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Plus, X, Upload, Loader2 } from 'lucide-react'
+import { Switch } from '@/components/ui/switch'
+import { Plus, X, Upload, Loader2, ImageIcon } from 'lucide-react'
 import { toast } from 'sonner'
 
 const SERVERS = ['01', '02', '03', '04']
+const TALISMANS_CATEGORY_SLUG = 'talismans-packs'
+const DEFAULT_TALISMAN_COVER = '/images/talisman-default-cover.png'
 
 interface Props {
   categories: Category[]
@@ -55,6 +58,20 @@ export function ListingForm({ categories, userId, listing }: Props) {
   )
   const [uploading, setUploading] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [useDefaultCover, setUseDefaultCover] = useState(false)
+
+  // Find the Talismans category
+  const talismanCategory = categories.find(c => c.slug === TALISMANS_CATEGORY_SLUG)
+  const isTalismanCategory = categoryId === talismanCategory?.id
+
+  // Auto-enable/disable default cover when category changes
+  useEffect(() => {
+    if (isTalismanCategory) {
+      setUseDefaultCover(true)
+    } else {
+      setUseDefaultCover(false)
+    }
+  }, [isTalismanCategory])
 
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
@@ -133,6 +150,11 @@ export function ListingForm({ categories, userId, listing }: Props) {
       return
     }
 
+    // Prepare photos array - add default cover at the beginning if enabled
+    const finalPhotos = isTalismanCategory && useDefaultCover 
+      ? [DEFAULT_TALISMAN_COVER, ...photos] 
+      : photos
+
     const listingData = {
       user_id: user.id,
       title: title.trim(),
@@ -142,7 +164,7 @@ export function ListingForm({ categories, userId, listing }: Props) {
       price: parseFloat(price),
       currency,
       category_id: categoryId,
-      photos,
+      photos: finalPhotos,
       status: 'pending' as const,
       updated_at: new Date().toISOString(),
     }
@@ -311,7 +333,44 @@ export function ListingForm({ categories, userId, listing }: Props) {
         <CardHeader>
           <CardTitle className="text-base">Фото (до 10)</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="flex flex-col gap-4">
+          {/* Default cover for Talismans category */}
+          {isTalismanCategory && (
+            <div className="flex items-center gap-4 rounded-lg border border-primary/30 bg-primary/5 p-3">
+              <div className="relative h-16 w-12 flex-shrink-0 overflow-hidden rounded-md border border-border/30">
+                <img 
+                  src={DEFAULT_TALISMAN_COVER} 
+                  alt="Обложка по умолчанию" 
+                  className={`h-full w-full object-cover transition-opacity ${useDefaultCover ? 'opacity-100' : 'opacity-40'}`}
+                />
+                {!useDefaultCover && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-background/50">
+                    <X className="h-4 w-4 text-muted-foreground" />
+                  </div>
+                )}
+              </div>
+              <div className="flex flex-1 flex-col gap-1">
+                <div className="flex items-center gap-2">
+                  <ImageIcon className="h-4 w-4 text-primary" />
+                  <span className="text-sm font-medium">Обложка по умолчанию</span>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Автоматически добавляется для категории "Талисманы/Паки"
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground">
+                  {useDefaultCover ? 'Вкл' : 'Выкл'}
+                </span>
+                <Switch
+                  checked={useDefaultCover}
+                  onCheckedChange={setUseDefaultCover}
+                />
+              </div>
+            </div>
+          )}
+
+          {/* User photos */}
           <div className="flex flex-wrap gap-3">
             {photos.map((photo, i) => (
               <div key={i} className="group relative h-20 w-20 overflow-hidden rounded-md border border-border/30">
