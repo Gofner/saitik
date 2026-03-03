@@ -43,6 +43,22 @@ export function ProfileForm({ profile }: ProfileFormProps) {
       return
     }
 
+    // Check if display name is already taken by another user
+    if (formData.display_name.trim()) {
+      const { data: existingUser } = await supabase
+        .from('profiles')
+        .select('id')
+        .ilike('display_name', formData.display_name.trim())
+        .neq('id', user.id)
+        .single()
+
+      if (existingUser) {
+        setError('Это имя уже занято. Выберите другое')
+        setLoading(false)
+        return
+      }
+    }
+
     const { error: updateError } = await supabase
       .from('profiles')
       .update({
