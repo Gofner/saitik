@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
+import Image from 'next/image'
 import {
   Card,
   CardContent,
@@ -48,10 +49,15 @@ export default function LoginPage() {
       <div className="w-full max-w-sm">
         <div className="mb-8 text-center">
           <Link href="/" className="inline-flex items-center gap-2 text-lg font-bold text-foreground">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-foreground text-background text-sm font-black">
-              G
-            </div>
-            ОПГ "Малиновка"
+            <Image
+              src="/logo.png"
+              alt="Logo"
+              width={128}
+              height={75}
+              className="h-8 w-auto"
+            />
+
+            MALMARKET
           </Link>
         </div>
         <Card className="border-border/50 bg-card">
@@ -76,8 +82,20 @@ export default function LoginPage() {
                     className="bg-secondary/50 border-border/50"
                   />
                 </div>
+
                 <div className="grid gap-2">
-                  <Label htmlFor="password">Пароль</Label>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="password">Пароль</Label>
+
+                    
+                    <Link
+                      href="/auth/forgot-password"
+                      className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-4"
+                    >
+                      Забыли пароль?
+                    </Link>
+                  </div>
+
                   <Input
                     id="password"
                     type="password"
@@ -87,11 +105,14 @@ export default function LoginPage() {
                     className="bg-secondary/50 border-border/50"
                   />
                 </div>
+
                 {error && <p className="text-sm text-destructive">{error}</p>}
+
                 <Button type="submit" className="w-full" disabled={isLoading}>
                   {isLoading ? 'Вход...' : 'Войти'}
                 </Button>
               </div>
+
               <div className="mt-4 text-center text-sm text-muted-foreground">
                 {'Нет аккаунта? '}
                 <Link

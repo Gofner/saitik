@@ -7,6 +7,7 @@ import {
 } from '@/components/ui/card'
 import Link from 'next/link'
 import Image from 'next/image'
+import { Button } from '@/components/ui/button'
 
 export default function SignUpSuccessPage() {
   return (
@@ -21,20 +22,25 @@ export default function SignUpSuccessPage() {
               height={75}
               className="h-8 w-auto"
             />
-
-            ОПГ "Малиновка"
+            MALMARKET
           </Link>
         </div>
+
         <Card className="border-border/50 bg-card">
           <CardHeader>
             <CardTitle className="text-2xl">Регистрация завершена!</CardTitle>
             <CardDescription>Проверьте вашу почту</CardDescription>
           </CardHeader>
-          <CardContent>
+
+          <CardContent className="space-y-4">
             <p className="text-sm text-muted-foreground leading-relaxed">
               Мы отправили письмо с подтверждением на ваш email. Перейдите по ссылке
               в письме, чтобы активировать аккаунт и начать продавать.
             </p>
+
+            <Button asChild className="w-full">
+              <Link href="/">Главная</Link>
+            </Button>
           </CardContent>
         </Card>
       </div>

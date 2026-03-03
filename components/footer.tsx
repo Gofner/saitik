@@ -8,7 +8,7 @@ export function Footer() {
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-3">
             <a
-              href="https://discord.gg/ТВОЯССЫЛКА"
+              href="https://discord.gg/5qc9x5WAx8"
               target="_blank"
               rel="noreferrer noopener"
               className="rounded-full p-2 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
@@ -22,7 +22,7 @@ export function Footer() {
             </a>
 
             <a
-              href="https://t.me/ТВОЙКАНАЛ"
+              href="https://t.me/malinovka_hooligans"
               target="_blank"
               rel="noreferrer noopener"
               className="rounded-full p-2 text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
@@ -46,7 +46,7 @@ export function Footer() {
         </nav>
 
         {/* Right */}
-        <p className="text-muted-foreground/60">{'ОПГ "Малиновка" \u00A9 2026'}</p>
+        <p className="text-muted-foreground/60">{'MALMARKET \u00A9 2026'}</p>
       </div>
     </footer>
   )
