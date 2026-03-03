@@ -341,6 +341,7 @@ export function ListingForm({ categories, userId, listing }: Props) {
                 <img 
                   src={DEFAULT_TALISMAN_COVER} 
                   alt="Обложка по умолчанию" 
+                  loading="eager"
                   className={`h-full w-full object-cover transition-opacity ${useDefaultCover ? 'opacity-100' : 'opacity-40'}`}
                 />
                 {!useDefaultCover && (
