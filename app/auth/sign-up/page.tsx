@@ -43,6 +43,25 @@ export default function SignUpPage() {
       return
     }
 
+    if (!displayName.trim()) {
+      setError('Имя на площадке обязательно')
+      setIsLoading(false)
+      return
+    }
+
+    // Check if display name is already taken
+    const { data: existingUser } = await supabase
+      .from('profiles')
+      .select('id')
+      .ilike('display_name', displayName.trim())
+      .single()
+
+    if (existingUser) {
+      setError('Это имя уже занято. Выберите другое')
+      setIsLoading(false)
+      return
+    }
+
     try {
       const { error } = await supabase.auth.signUp({
         email,
