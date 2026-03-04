@@ -410,11 +410,13 @@ export function ListingForm({ categories, userId, listing }: Props) {
       {/* Items */}
       <Card className="border-border/50 bg-card">
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-base">Товары в лоте</CardTitle>
-          <Button type="button" variant="ghost" size="sm" onClick={addItem} className="gap-1">
-            <Plus className="h-4 w-4" />
-            Добавить
-          </Button>
+          <CardTitle className="text-base">Товары в лоте (до 5)</CardTitle>
+          {items.length < 5 && (
+            <Button type="button" variant="ghost" size="sm" onClick={addItem} className="gap-1">
+              <Plus className="h-4 w-4" />
+              Добавить
+            </Button>
+          )}
         </CardHeader>
         <CardContent>
           {items.length > 0 ? (
