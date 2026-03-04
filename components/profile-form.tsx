@@ -25,6 +25,7 @@ export function ProfileForm({ profile }: ProfileFormProps) {
     display_name: profile?.display_name || '',
     telegram: profile?.telegram || '',
     discord: profile?.discord || '',
+    vk_url: profile?.vk_url || '',
     bio: profile?.bio || ''
   })
 
@@ -65,6 +66,7 @@ export function ProfileForm({ profile }: ProfileFormProps) {
         display_name: formData.display_name || null,
         telegram: formData.telegram || null,
         discord: formData.discord || null,
+        vk_url: formData.vk_url || null,
         bio: formData.bio || null,
         updated_at: new Date().toISOString()
       })
@@ -148,6 +150,17 @@ export function ProfileForm({ profile }: ProfileFormProps) {
               value={formData.discord}
               onChange={(e) => setFormData(prev => ({ ...prev, discord: e.target.value }))}
               placeholder="username#0000 или username"
+              className="bg-background"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="vk_url">ВКонтакте</Label>
+            <Input
+              id="vk_url"
+              value={formData.vk_url}
+              onChange={(e) => setFormData(prev => ({ ...prev, vk_url: e.target.value }))}
+              placeholder="https://vk.com/username"
               className="bg-background"
             />
           </div>

@@ -12,6 +12,7 @@ export interface Profile {
   avatar_url: string | null
   telegram: string | null
   discord: string | null
+  vk_url: string | null
   bio: string | null
   role: 'user' | 'admin' | 'developer'
   is_banned: boolean
@@ -19,6 +20,29 @@ export interface Profile {
   banned_at: string | null
   created_at: string
   updated_at: string
+}
+
+export interface Conversation {
+  id: string
+  listing_id: string
+  buyer_id: string
+  seller_id: string
+  created_at: string
+  updated_at: string
+  listing?: Listing
+  buyer?: Profile
+  seller?: Profile
+  unread_count?: number
+}
+
+export interface Message {
+  id: string
+  conversation_id: string
+  sender_id: string
+  content: string
+  is_read: boolean
+  created_at: string
+  sender?: Profile
 }
 
 export interface Listing {

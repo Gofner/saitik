@@ -78,7 +78,20 @@ export default function SignUpPage() {
       if (error) throw error
       router.push('/auth/sign-up-success')
     } catch (error: unknown) {
-      setError(error instanceof Error ? error.message : 'Произошла ошибка')
+      const errorMessage = error instanceof Error ? error.message : String(error)
+      
+      // Check for specific Supabase auth error messages
+      if (errorMessage.includes('User already registered') || 
+          errorMessage.includes('already been registered') ||
+          errorMessage.includes('already exists')) {
+        setError('Эта почта уже зарегистрирована')
+      } else if (errorMessage.includes('display_name') || errorMessage.includes('unique')) {
+        setError('Это имя уже занято. Выберите другое')
+      } else if (errorMessage.includes('Invalid email')) {
+        setError('Некорректный email адрес')
+      } else {
+        setError('Произошла ошибка при регистрации')
+      }
     } finally {
       setIsLoading(false)
     }
