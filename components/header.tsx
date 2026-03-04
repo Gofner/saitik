@@ -14,7 +14,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Menu, X, User as UserIcon, LogOut, LayoutDashboard, Shield } from 'lucide-react'
+import { Menu, X, User as UserIcon, LogOut, LayoutDashboard, Shield, MessageCircle } from 'lucide-react'
+import { MessageBadge } from '@/components/message-badge'
 
 export function Header() {
   const [user, setUser] = useState<User | null>(null)
@@ -80,6 +81,7 @@ export function Header() {
           <Link href="/catalog" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
             Каталог
           </Link>
+          {user && <MessageBadge />}
           {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -145,6 +147,10 @@ export function Header() {
           </Link>
           {user ? (
             <>
+              <Link href="/messages" className="rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-secondary hover:text-foreground flex items-center gap-2" onClick={() => setMobileOpen(false)}>
+                <MessageCircle className="h-4 w-4" />
+                Сообщения
+              </Link>
               <Link href="/dashboard" className="rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-secondary hover:text-foreground" onClick={() => setMobileOpen(false)}>
                 Мои объявления
               </Link>
