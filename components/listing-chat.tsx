@@ -161,6 +161,9 @@ export function ListingChat({ listing, currentUser }: ListingChatProps) {
           filter: `conversation_id=eq.${conversationId}`
         },
         async (payload) => {
+          // Skip if message is from current user (already added locally)
+          if (payload.new.sender_id === currentUser?.id) return
+          
           const { data: newMsg } = await supabase
             .from('messages')
             .select('*, sender:profiles(id, display_name, avatar_url)')
@@ -168,13 +171,15 @@ export function ListingChat({ listing, currentUser }: ListingChatProps) {
             .single()
 
           if (newMsg) {
-            setMessages(prev => [...prev, newMsg])
-            if (newMsg.sender_id !== currentUser?.id) {
-              await supabase
-                .from('messages')
-                .update({ is_read: true })
-                .eq('id', newMsg.id)
-            }
+            setMessages(prev => {
+              // Check if message already exists to prevent duplicates
+              if (prev.some(m => m.id === newMsg.id)) return prev
+              return [...prev, newMsg]
+            })
+            await supabase
+              .from('messages')
+              .update({ is_read: true })
+              .eq('id', newMsg.id)
           }
         }
       )
@@ -223,15 +228,21 @@ export function ListingChat({ listing, currentUser }: ListingChatProps) {
       return
     }
 
-    const { error } = await supabase
+    const messageContent = newMessage.trim()
+    
+    const { data: newMsg, error } = await supabase
       .from('messages')
       .insert({
         conversation_id: convId,
         sender_id: currentUser.id,
-        content: newMessage.trim()
+        content: messageContent
       })
+      .select('*, sender:profiles(id, display_name, avatar_url)')
+      .single()
 
-    if (!error) {
+    if (!error && newMsg) {
+      // Add message to local state immediately
+      setMessages(prev => [...prev, newMsg])
       setNewMessage('')
       await supabase
         .from('conversations')
