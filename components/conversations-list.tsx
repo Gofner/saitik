@@ -36,7 +36,7 @@ export function ConversationsList({ conversations, currentUserId }: Conversation
         const photo = listing?.photos?.[0]
 
         return (
-          <Link key={conv.id} href={`/listing/${conv.listing_id}`}>
+          <Link key={conv.id} href={`/listing/${conv.listing_id}?chat=${conv.id}`}>
             <Card className="border-border/50 bg-card transition-colors hover:bg-secondary/50">
               <CardContent className="flex items-center gap-4 p-4">
                 {/* Listing photo */}

@@ -1,5 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { Header } from '@/components/header'
+import { Footer } from '@/components/footer'
 import { ConversationsList } from '@/components/conversations-list'
 
 export const metadata = {
@@ -41,12 +43,16 @@ export default async function MessagesPage() {
   )
 
   return (
-    <main className="mx-auto max-w-4xl px-4 py-8">
-      <h1 className="mb-6 text-2xl font-bold">Сообщения</h1>
-      <ConversationsList 
-        conversations={conversationsWithUnread} 
-        currentUserId={user.id} 
-      />
-    </main>
+    <div className="flex min-h-screen flex-col">
+      <Header />
+      <main className="mx-auto w-full max-w-4xl flex-1 px-4 py-8">
+        <h1 className="mb-6 text-2xl font-bold">Сообщения</h1>
+        <ConversationsList 
+          conversations={conversationsWithUnread} 
+          currentUserId={user.id} 
+        />
+      </main>
+      <Footer />
+    </div>
   )
 }
