@@ -10,6 +10,8 @@ import { Badge } from '@/components/ui/badge'
 import { Plus, Pencil, Trash2, Eye, EyeOff, ImageIcon } from 'lucide-react'
 import { toast } from 'sonner'
 
+const PAGE_TITLE = 'Мои объявления'
+
 export function MyListings({ listings, activeCount }: { listings: Listing[]; activeCount: number }) {
   const router = useRouter()
   const canCreate = activeCount < 3
@@ -45,7 +47,7 @@ export function MyListings({ listings, activeCount }: { listings: Listing[]; act
     <div>
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Мои объявления</h1>
+          <h1 className="text-2xl font-bold text-foreground">{PAGE_TITLE}</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             {activeCount} из 3 слотов использовано
           </p>
