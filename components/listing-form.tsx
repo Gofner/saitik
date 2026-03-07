@@ -73,16 +73,22 @@ export function ListingForm({ categories, userId, listing }: Props) {
     }
   }, [isTalismanCategory])
 
-  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files
-    if (!files || photos.length >= 10) return
+  const uploadFiles = async (files: File[]) => {
+    if (files.length === 0 || photos.length >= 10) return
 
     setUploading(true)
     const supabase = createClient()
     const newPhotos: string[] = []
 
-    for (const file of Array.from(files).slice(0, 10 - photos.length)) {
-      const ext = file.name.split('.').pop()
+    for (const file of files.slice(0, 10 - photos.length)) {
+      // Determine extension from file type
+      const extMap: Record<string, string> = {
+        'image/jpeg': 'jpg',
+        'image/png': 'png',
+        'image/webp': 'webp',
+        'image/gif': 'gif',
+      }
+      const ext = extMap[file.type] || file.name.split('.').pop() || 'jpg'
       const path = `${userId}/${crypto.randomUUID()}.${ext}`
 
       const { error } = await supabase.storage
@@ -99,7 +105,33 @@ export function ListingForm({ categories, userId, listing }: Props) {
 
     setPhotos((prev) => [...prev, ...newPhotos])
     setUploading(false)
+  }
+
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files
+    if (!files) return
+    await uploadFiles(Array.from(files))
     e.target.value = ''
+  }
+
+  const handlePaste = async (e: React.ClipboardEvent) => {
+    const items = e.clipboardData?.items
+    if (!items) return
+
+    const imageFiles: File[] = []
+    for (const item of Array.from(items)) {
+      if (item.type.startsWith('image/')) {
+        const file = item.getAsFile()
+        if (file) {
+          imageFiles.push(file)
+        }
+      }
+    }
+
+    if (imageFiles.length > 0) {
+      e.preventDefault()
+      await uploadFiles(imageFiles)
+    }
   }
 
   const removePhoto = (index: number) => {
@@ -235,7 +267,7 @@ export function ListingForm({ categories, userId, listing }: Props) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+    <form onSubmit={handleSubmit} onPaste={handlePaste} className="flex flex-col gap-6">
       {/* Basic info */}
       <Card className="border-border/50 bg-card">
         <CardHeader>
@@ -332,6 +364,7 @@ export function ListingForm({ categories, userId, listing }: Props) {
       <Card className="border-border/50 bg-card">
         <CardHeader>
           <CardTitle className="text-base">Фото (до 10)</CardTitle>
+          <p className="text-xs text-muted-foreground">Можно вставить из буфера обмена (Ctrl+V)</p>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
           {/* Default cover for Talismans category */}
