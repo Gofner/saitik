@@ -107,7 +107,7 @@ export function ListingDetail({ listing, profile }: { listing: Listing; profile:
                 <img
                   src={photos[currentPhoto]}
                   alt={`${listing.title} - фото ${currentPhoto + 1}`}
-                  className="h-full w-full object-cover"
+                  className="h-full w-full object-contain"
                 />
                 {photos.length > 1 && (
                   <>
@@ -152,9 +152,9 @@ export function ListingDetail({ listing, profile }: { listing: Listing; profile:
                 <button
                   key={i}
                   onClick={() => setCurrentPhoto(i)}
-                  className={`flex-shrink-0 h-16 w-16 overflow-hidden rounded-md border transition-all ${i === currentPhoto ? 'border-foreground' : 'border-border/50 opacity-60 hover:opacity-100'}`}
+                  className={`flex-shrink-0 h-16 w-16 overflow-hidden rounded-md border transition-all bg-secondary ${i === currentPhoto ? 'border-foreground' : 'border-border/50 opacity-60 hover:opacity-100'}`}
                 >
-                  <img src={photo} alt="" className="h-full w-full object-cover" />
+                  <img src={photo} alt="" className="h-full w-full object-contain" />
                 </button>
               ))}
             </div>
@@ -301,7 +301,7 @@ export function ListingDetail({ listing, profile }: { listing: Listing; profile:
           {listing.description && (
             <Card className="border-border/50 bg-card overflow-hidden">
               <CardHeader className="pb-3">
-                <CardTitle className="text-base">Описание</CardTitle>
+                <CardTitle className="text-base">Описан��е</CardTitle>
               </CardHeader>
               <CardContent className="overflow-hidden">
                 <p className="text-sm leading-relaxed text-muted-foreground whitespace-pre-line break-all">
