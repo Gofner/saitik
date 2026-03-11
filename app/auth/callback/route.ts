@@ -17,7 +17,6 @@ export async function GET(request: Request) {
       
       // Prepare profile data based on provider
       let displayName: string | null = null
-      let vkUrl: string | null = null
       let discord: string | null = null
       let avatarUrl: string | null = null
       
@@ -29,26 +28,20 @@ export async function GET(request: Request) {
                       userMetadata.preferred_username
         discord = userMetadata.preferred_username || userMetadata.name
         avatarUrl = userMetadata.avatar_url
-      } else if (provider === 'vk' || provider === 'vkontakte') {
-        // VK provides first_name, last_name
-        const firstName = userMetadata.first_name || ''
-        const lastName = userMetadata.last_name || ''
-        displayName = `${firstName} ${lastName}`.trim() || userMetadata.full_name || userMetadata.name
-        // VK user ID for profile URL
-        if (userMetadata.provider_id || userMetadata.sub) {
-          vkUrl = `https://vk.com/id${userMetadata.provider_id || userMetadata.sub}`
-        }
+      } else if (provider === 'google') {
+        // Google provides full_name, email, picture
+        displayName = userMetadata.full_name || userMetadata.name || userMetadata.email?.split('@')[0]
         avatarUrl = userMetadata.avatar_url || userMetadata.picture
       }
       
       // Update profile with OAuth data
-      if (displayName || vkUrl || discord || avatarUrl) {
+      if (displayName || discord || avatarUrl) {
         const updateData: Record<string, string | null> = {}
         
         // Get existing profile to check if display_name is already set
         const { data: existingProfile } = await supabase
           .from('profiles')
-          .select('display_name, vk_url, discord, avatar_url')
+          .select('display_name, discord, avatar_url')
           .eq('id', user.id)
           .single()
         
@@ -58,9 +51,6 @@ export async function GET(request: Request) {
         }
         
         // Always update social links if we have them and they're not set
-        if (vkUrl && !existingProfile?.vk_url) {
-          updateData.vk_url = vkUrl
-        }
         if (discord && !existingProfile?.discord) {
           updateData.discord = discord
         }
