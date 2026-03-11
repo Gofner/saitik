@@ -29,26 +29,56 @@ export function Header() {
     const supabase = createClient()
     let isMounted = true
     
+    // Timeout fallback - if session doesn't load in 3 seconds, show login buttons
+    const timeoutId = setTimeout(() => {
+      if (isMounted && isLoading) {
+        setIsLoading(false)
+      }
+    }, 3000)
+    
     const loadUserAndProfile = async (userId: string) => {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('role, display_name')
-        .eq('id', userId)
-        .single()
-      if (isMounted) {
-        setIsAdmin(profile?.role === 'admin' || profile?.role === 'developer')
-        setDisplayName(profile?.display_name ?? null)
+      try {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role, display_name')
+          .eq('id', userId)
+          .single()
+        if (isMounted) {
+          setIsAdmin(profile?.role === 'admin' || profile?.role === 'developer')
+          setDisplayName(profile?.display_name ?? null)
+        }
+      } catch (e) {
+        console.error('Error loading profile:', e)
       }
     }
 
     const getUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (isMounted) {
-        setUser(user)
-        if (user) {
-          await loadUserAndProfile(user.id)
+      try {
+        const { data: { user }, error } = await supabase.auth.getUser()
+        if (error) {
+          // If error, try getSession as fallback
+          const { data: { session } } = await supabase.auth.getSession()
+          if (isMounted) {
+            setUser(session?.user ?? null)
+            if (session?.user) {
+              await loadUserAndProfile(session.user.id)
+            }
+            setIsLoading(false)
+          }
+          return
         }
-        setIsLoading(false)
+        if (isMounted) {
+          setUser(user)
+          if (user) {
+            await loadUserAndProfile(user.id)
+          }
+          setIsLoading(false)
+        }
+      } catch (e) {
+        console.error('Error getting user:', e)
+        if (isMounted) {
+          setIsLoading(false)
+        }
       }
     }
     getUser()
@@ -68,6 +98,7 @@ export function Header() {
 
     return () => {
       isMounted = false
+      clearTimeout(timeoutId)
       subscription.unsubscribe()
     }
   }, [])
