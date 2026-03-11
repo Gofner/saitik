@@ -17,8 +17,6 @@ import {
 import { Menu, X, User as UserIcon, LogOut, LayoutDashboard, Shield, MessageCircle } from 'lucide-react'
 import { MessageBadge } from '@/components/message-badge'
 
-const supabase = createClient()
-
 export function Header() {
   const [user, setUser] = useState<User | null>(null)
   const [isAdmin, setIsAdmin] = useState(false)
@@ -27,6 +25,8 @@ export function Header() {
   const router = useRouter()
 
   useEffect(() => {
+    const supabase = createClient()
+    
     const loadUserAndProfile = async (userId: string) => {
       const { data: profile } = await supabase
         .from('profiles')
@@ -60,6 +60,7 @@ export function Header() {
   }, [])
 
   const handleLogout = async () => {
+    const supabase = createClient()
     await supabase.auth.signOut()
     setUser(null)
     setIsAdmin(false)
@@ -79,7 +80,6 @@ export function Header() {
             height={75}
             className="h-8 w-auto"
           />
-
           MALMARKET
         </Link>
 
@@ -88,7 +88,6 @@ export function Header() {
           <Link href="/" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
             Главная
           </Link>
-
           <Link href="/catalog" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
             Каталог
           </Link>
