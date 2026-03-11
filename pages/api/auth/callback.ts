@@ -1,7 +1,13 @@
 import { createServerClient } from '@supabase/ssr'
 import type { NextApiRequest, NextApiResponse } from 'next'
 
+// Store cookies to set them all at once
+const cookiesToSet: string[] = []
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  // Clear previous cookies
+  cookiesToSet.length = 0
+  
   const code = req.query.code as string | undefined
 
   if (!code) {
@@ -20,10 +26,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           }
           return cookies
         },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) => {
-            const cookieString = `${name}=${value}; Path=${options?.path || '/'}; HttpOnly; SameSite=Lax${options?.maxAge ? `; Max-Age=${options.maxAge}` : '; Max-Age=31536000'}${process.env.NODE_ENV === 'production' ? '; Secure' : ''}`
-            res.appendHeader('Set-Cookie', cookieString)
+        setAll(cookies) {
+          cookies.forEach(({ name, value, options }) => {
+            const secure = process.env.NODE_ENV === 'production' ? '; Secure' : ''
+            const maxAge = options?.maxAge ? `; Max-Age=${options.maxAge}` : '; Max-Age=31536000'
+            const cookieString = `${name}=${value}; Path=/; HttpOnly; SameSite=Lax${maxAge}${secure}`
+            cookiesToSet.push(cookieString)
           })
         },
       },
@@ -36,6 +44,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (error) {
       console.error('Auth error:', error.message)
       return res.redirect('/auth/auth-code-error')
+    }
+
+    // Set all cookies at once using setHeader with array
+    if (cookiesToSet.length > 0) {
+      res.setHeader('Set-Cookie', cookiesToSet)
     }
 
     return res.redirect('/')
