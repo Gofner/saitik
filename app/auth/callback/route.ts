@@ -1,14 +1,13 @@
 import { createServerClient } from '@supabase/ssr'
-import { cookies } from 'next/headers'
-import { NextResponse } from 'next/server'
+import { NextResponse, type NextRequest } from 'next/server'
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url)
   const code = searchParams.get('code')
   const next = searchParams.get('next') ?? '/dashboard'
 
   if (code) {
-    const cookieStore = await cookies()
+    const response = NextResponse.redirect(`${origin}${next}`)
     
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -16,11 +15,11 @@ export async function GET(request: Request) {
       {
         cookies: {
           getAll() {
-            return cookieStore.getAll()
+            return request.cookies.getAll()
           },
           setAll(cookiesToSet) {
             cookiesToSet.forEach(({ name, value, options }) => {
-              cookieStore.set(name, value, options)
+              response.cookies.set(name, value, options)
             })
           },
         },
@@ -51,7 +50,7 @@ export async function GET(request: Request) {
         avatarUrl = userMetadata.avatar_url || userMetadata.picture
       }
       
-      // Update profile with OAuth data
+      // Update profile with OAuth data (non-blocking)
       if (displayName || discord || avatarUrl) {
         try {
           const { data: existingProfile } = await supabase
@@ -79,13 +78,12 @@ export async function GET(request: Request) {
               .update(updateData)
               .eq('id', user.id)
           }
-        } catch (e) {
-          // Profile update is not critical, continue with redirect
-          console.error('Profile update error:', e)
+        } catch {
+          // Profile update failed, but auth succeeded - continue
         }
       }
       
-      return NextResponse.redirect(`${origin}${next}`)
+      return response
     }
   }
 
