@@ -17,46 +17,47 @@ import {
 import { Menu, X, User as UserIcon, LogOut, LayoutDashboard, Shield, MessageCircle } from 'lucide-react'
 import { MessageBadge } from '@/components/message-badge'
 
+const supabase = createClient()
+
 export function Header() {
   const [user, setUser] = useState<User | null>(null)
   const [isAdmin, setIsAdmin] = useState(false)
   const [displayName, setDisplayName] = useState<string | null>(null)
   const [mobileOpen, setMobileOpen] = useState(false)
   const router = useRouter()
-  const supabase = createClient()
 
   useEffect(() => {
+    const loadUserAndProfile = async (userId: string) => {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role, display_name')
+        .eq('id', userId)
+        .single()
+      setIsAdmin(profile?.role === 'admin' || profile?.role === 'developer')
+      setDisplayName(profile?.display_name ?? null)
+    }
+
     const getUser = async () => {
       const { data: { user } } = await supabase.auth.getUser()
       setUser(user)
       if (user) {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('role, display_name')
-          .eq('id', user.id)
-          .single()
-        setIsAdmin(profile?.role === 'admin' || profile?.role === 'developer')
-        setDisplayName(profile?.display_name ?? null)
+        await loadUserAndProfile(user.id)
       }
     }
     getUser()
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       setUser(session?.user ?? null)
-      if (event === 'SIGNED_IN' && session?.user) {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('role, display_name')
-          .eq('id', session.user.id)
-          .single()
-        setIsAdmin(profile?.role === 'admin' || profile?.role === 'developer')
-        setDisplayName(profile?.display_name ?? null)
-        router.refresh()
+      if (session?.user) {
+        await loadUserAndProfile(session.user.id)
+      } else {
+        setIsAdmin(false)
+        setDisplayName(null)
       }
     })
 
     return () => subscription.unsubscribe()
-  }, [supabase])
+  }, [])
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
