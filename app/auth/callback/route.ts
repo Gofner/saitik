@@ -1,4 +1,5 @@
-import { createClient } from '@/lib/supabase/server'
+import { createServerClient } from '@supabase/ssr'
+import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
 
 export async function GET(request: Request) {
@@ -7,7 +8,25 @@ export async function GET(request: Request) {
   const next = searchParams.get('next') ?? '/dashboard'
 
   if (code) {
-    const supabase = await createClient()
+    const cookieStore = await cookies()
+    
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return cookieStore.getAll()
+          },
+          setAll(cookiesToSet) {
+            cookiesToSet.forEach(({ name, value, options }) => {
+              cookieStore.set(name, value, options)
+            })
+          },
+        },
+      }
+    )
+    
     const { data, error } = await supabase.auth.exchangeCodeForSession(code)
     
     if (!error && data.user) {
@@ -21,7 +40,6 @@ export async function GET(request: Request) {
       let avatarUrl: string | null = null
       
       if (provider === 'discord') {
-        // Discord provides username and global_name
         displayName = userMetadata.custom_claims?.global_name || 
                       userMetadata.full_name || 
                       userMetadata.name ||
@@ -29,41 +47,41 @@ export async function GET(request: Request) {
         discord = userMetadata.preferred_username || userMetadata.name
         avatarUrl = userMetadata.avatar_url
       } else if (provider === 'google') {
-        // Google provides full_name, email, picture
         displayName = userMetadata.full_name || userMetadata.name || userMetadata.email?.split('@')[0]
         avatarUrl = userMetadata.avatar_url || userMetadata.picture
       }
       
       // Update profile with OAuth data
       if (displayName || discord || avatarUrl) {
-        const updateData: Record<string, string | null> = {}
-        
-        // Get existing profile to check if display_name is already set
-        const { data: existingProfile } = await supabase
-          .from('profiles')
-          .select('display_name, discord, avatar_url')
-          .eq('id', user.id)
-          .single()
-        
-        // Only set display_name if it's not already set
-        if (displayName && !existingProfile?.display_name) {
-          updateData.display_name = displayName
-        }
-        
-        // Always update social links if we have them and they're not set
-        if (discord && !existingProfile?.discord) {
-          updateData.discord = discord
-        }
-        if (avatarUrl && !existingProfile?.avatar_url) {
-          updateData.avatar_url = avatarUrl
-        }
-        
-        if (Object.keys(updateData).length > 0) {
-          updateData.updated_at = new Date().toISOString()
-          await supabase
+        try {
+          const { data: existingProfile } = await supabase
             .from('profiles')
-            .update(updateData)
+            .select('display_name, discord, avatar_url')
             .eq('id', user.id)
+            .single()
+          
+          const updateData: Record<string, string> = {}
+          
+          if (displayName && !existingProfile?.display_name) {
+            updateData.display_name = displayName
+          }
+          if (discord && !existingProfile?.discord) {
+            updateData.discord = discord
+          }
+          if (avatarUrl && !existingProfile?.avatar_url) {
+            updateData.avatar_url = avatarUrl
+          }
+          
+          if (Object.keys(updateData).length > 0) {
+            updateData.updated_at = new Date().toISOString()
+            await supabase
+              .from('profiles')
+              .update(updateData)
+              .eq('id', user.id)
+          }
+        } catch (e) {
+          // Profile update is not critical, continue with redirect
+          console.error('Profile update error:', e)
         }
       }
       
@@ -71,6 +89,5 @@ export async function GET(request: Request) {
     }
   }
 
-  // Return the user to an error page with instructions
   return NextResponse.redirect(`${origin}/auth/auth-code-error`)
 }
