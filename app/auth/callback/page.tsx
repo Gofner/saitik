@@ -1,39 +1,49 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Loader2 } from 'lucide-react'
 
 export default function AuthCallbackPage() {
-  const router = useRouter()
   const [status, setStatus] = useState('Авторизация...')
+  const [debugInfo, setDebugInfo] = useState('')
 
   useEffect(() => {
     const handleCallback = async () => {
       const supabase = createClient()
       
-      // Check if we already have a session (Supabase auto-handles hash fragment)
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+      // Log URL for debugging
+      const fullUrl = window.location.href
+      const hash = window.location.hash
+      const search = window.location.search
+      setDebugInfo(`URL: ${fullUrl.substring(0, 100)}...`)
       
-      if (session) {
-        setStatus('Успешно! Перенаправление...')
-        window.location.href = '/'
-        return
+      // Check hash fragment for tokens (implicit flow)
+      if (hash && hash.includes('access_token')) {
+        setStatus('Обработка токена...')
+        // Supabase client automatically handles hash fragment
+        // Just need to wait a bit for it to process
+        await new Promise(resolve => setTimeout(resolve, 1000))
+        
+        const { data: { session } } = await supabase.auth.getSession()
+        if (session) {
+          setStatus('Успешно! Перенаправление...')
+          window.location.replace('/')
+          return
+        }
       }
       
-      // Try to get code from URL query params
-      const urlParams = new URLSearchParams(window.location.search)
+      // Check for code in query params (PKCE flow)
+      const urlParams = new URLSearchParams(search)
       const code = urlParams.get('code')
       const errorParam = urlParams.get('error')
       const errorDescription = urlParams.get('error_description')
       
       if (errorParam) {
-        console.error('OAuth error:', errorParam, errorDescription)
-        setStatus('Ошибка авторизации')
+        setStatus('Ошибка: ' + (errorDescription || errorParam))
         setTimeout(() => {
-          window.location.href = '/auth/login?error=' + encodeURIComponent(errorDescription || errorParam)
-        }, 1000)
+          window.location.replace('/auth/login?error=' + encodeURIComponent(errorDescription || errorParam))
+        }, 2000)
         return
       }
       
@@ -42,43 +52,56 @@ export default function AuthCallbackPage() {
         try {
           const { data, error } = await supabase.auth.exchangeCodeForSession(code)
           if (error) {
-            console.error('Exchange error:', error)
             setStatus('Ошибка: ' + error.message)
             setTimeout(() => {
-              window.location.href = '/auth/login?error=exchange_failed'
+              window.location.replace('/auth/login?error=exchange_failed')
             }, 2000)
             return
           }
           if (data.session) {
             setStatus('Успешно! Перенаправление...')
-            window.location.href = '/'
+            window.location.replace('/')
             return
           }
         } catch (e) {
-          console.error('Callback error:', e)
-          setStatus('Ошибка авторизации')
+          setStatus('Ошибка обмена кода')
           setTimeout(() => {
-            window.location.href = '/auth/login?error=callback_failed'
+            window.location.replace('/auth/login?error=callback_failed')
           }, 2000)
           return
         }
       }
       
-      // No code and no session - something went wrong
-      setStatus('Не удалось получить данные авторизации')
+      // Wait and check session one more time (Supabase may need time to process)
+      setStatus('Проверка сессии...')
+      await new Promise(resolve => setTimeout(resolve, 1500))
+      
+      const { data: { session } } = await supabase.auth.getSession()
+      if (session) {
+        setStatus('Успешно! Перенаправление...')
+        window.location.replace('/')
+        return
+      }
+      
+      // Final fallback - no session found
+      setStatus('Сессия не найдена')
+      setDebugInfo(`hash: ${hash ? 'yes' : 'no'}, code: ${code ? 'yes' : 'no'}`)
       setTimeout(() => {
-        window.location.href = '/auth/login'
-      }, 2000)
+        window.location.replace('/auth/login')
+      }, 3000)
     }
 
     handleCallback()
   }, [])
 
   return (
-    <div className="flex min-h-screen items-center justify-center">
+    <div className="flex min-h-screen items-center justify-center bg-background">
       <div className="flex flex-col items-center gap-4">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         <p className="text-muted-foreground">{status}</p>
+        {debugInfo && (
+          <p className="text-xs text-muted-foreground/50 max-w-md text-center break-all">{debugInfo}</p>
+        )}
       </div>
     </div>
   )
