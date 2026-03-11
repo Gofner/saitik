@@ -17,13 +17,14 @@ import {
 import { Menu, X, User as UserIcon, LogOut, LayoutDashboard, Shield, MessageCircle } from 'lucide-react'
 import { MessageBadge } from '@/components/message-badge'
 
+const supabase = createClient()
+
 export function Header() {
   const [user, setUser] = useState<User | null>(null)
   const [isAdmin, setIsAdmin] = useState(false)
   const [displayName, setDisplayName] = useState<string | null>(null)
   const [mobileOpen, setMobileOpen] = useState(false)
   const router = useRouter()
-  const supabase = createClient()
 
   useEffect(() => {
     const loadUserAndProfile = async (userId: string) => {
