@@ -22,10 +22,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         },
         setAll(cookiesToSet) {
           cookiesToSet.forEach(({ name, value, options }) => {
-            res.setHeader(
-              'Set-Cookie',
-              `${name}=${value}; Path=${options?.path || '/'}; HttpOnly; SameSite=Lax${options?.maxAge ? `; Max-Age=${options.maxAge}` : ''}${process.env.NODE_ENV === 'production' ? '; Secure' : ''}`
-            )
+            const cookieString = `${name}=${value}; Path=${options?.path || '/'}; HttpOnly; SameSite=Lax${options?.maxAge ? `; Max-Age=${options.maxAge}` : '; Max-Age=31536000'}${process.env.NODE_ENV === 'production' ? '; Secure' : ''}`
+            res.appendHeader('Set-Cookie', cookieString)
           })
         },
       },
