@@ -22,10 +22,12 @@ export function Header() {
   const [isAdmin, setIsAdmin] = useState(false)
   const [displayName, setDisplayName] = useState<string | null>(null)
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
   const router = useRouter()
 
   useEffect(() => {
     const supabase = createClient()
+    let isMounted = true
     
     const loadUserAndProfile = async (userId: string) => {
       const { data: profile } = await supabase
@@ -33,30 +35,41 @@ export function Header() {
         .select('role, display_name')
         .eq('id', userId)
         .single()
-      setIsAdmin(profile?.role === 'admin' || profile?.role === 'developer')
-      setDisplayName(profile?.display_name ?? null)
+      if (isMounted) {
+        setIsAdmin(profile?.role === 'admin' || profile?.role === 'developer')
+        setDisplayName(profile?.display_name ?? null)
+      }
     }
 
     const getUser = async () => {
       const { data: { user } } = await supabase.auth.getUser()
-      setUser(user)
-      if (user) {
-        await loadUserAndProfile(user.id)
+      if (isMounted) {
+        setUser(user)
+        if (user) {
+          await loadUserAndProfile(user.id)
+        }
+        setIsLoading(false)
       }
     }
     getUser()
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      setUser(session?.user ?? null)
-      if (session?.user) {
-        await loadUserAndProfile(session.user.id)
-      } else {
-        setIsAdmin(false)
-        setDisplayName(null)
+      if (isMounted) {
+        setUser(session?.user ?? null)
+        if (session?.user) {
+          await loadUserAndProfile(session.user.id)
+        } else {
+          setIsAdmin(false)
+          setDisplayName(null)
+        }
+        setIsLoading(false)
       }
     })
 
-    return () => subscription.unsubscribe()
+    return () => {
+      isMounted = false
+      subscription.unsubscribe()
+    }
   }, [])
 
   const handleLogout = async () => {
@@ -92,7 +105,9 @@ export function Header() {
             Каталог
           </Link>
           {user && <MessageBadge />}
-          {user ? (
+          {isLoading ? (
+            <div className="h-9 w-20 animate-pulse rounded-md bg-muted" />
+          ) : user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="sm" className="gap-2">
