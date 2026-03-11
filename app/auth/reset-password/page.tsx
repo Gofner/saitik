@@ -16,8 +16,6 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 
-const supabase = createClient()
-
 export default function ResetPasswordPage() {
   const router = useRouter()
 
@@ -30,6 +28,7 @@ export default function ResetPasswordPage() {
   // 1) Подхватываем token_hash из URL и создаём сессию через verifyOtp
   useEffect(() => {
     const init = async () => {
+      const supabase = createClient()
       setErr(null)
       setMsg(null)
 
@@ -69,6 +68,7 @@ export default function ResetPasswordPage() {
   // 2) Меняем пароль
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault()
+    const supabase = createClient()
     setLoading(true)
     setMsg(null)
     setErr(null)
