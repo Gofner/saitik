@@ -301,7 +301,7 @@ export function ListingDetail({ listing, profile }: { listing: Listing; profile:
           {listing.description && (
             <Card className="border-border/50 bg-card overflow-hidden">
               <CardHeader className="pb-3">
-                <CardTitle className="text-base">Описан��е</CardTitle>
+                <CardTitle className="text-base">Описание</CardTitle>
               </CardHeader>
               <CardContent className="overflow-hidden">
                 <p className="text-sm leading-relaxed text-muted-foreground whitespace-pre-line break-all">
