@@ -1,11 +1,10 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Geist_Mono } from "next/font/google";
+import { Inter } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { Toaster } from "sonner";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin", "cyrillic"] });
-const geistMono = Geist_Mono({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: 'MALMARKET — Торговая площадка игровых предметов',
@@ -68,7 +67,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ru">
-      <body className={`${inter.className} ${geistMono.className} antialiased`}>
+      <body className={`${inter.className} antialiased`}>
         {children}
         <Toaster theme="dark" position="top-right" richColors />
         <Analytics />
