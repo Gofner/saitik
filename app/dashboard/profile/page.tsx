@@ -4,12 +4,14 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { ProfileForm } from '@/components/profile-form'
+import { TelegramLink } from '@/components/telegram-link'
 import type { Profile } from '@/lib/types'
 import { Loader2 } from 'lucide-react'
 
 export default function ProfilePage() {
   const router = useRouter()
   const [profile, setProfile] = useState<Profile | null>(null)
+  const [telegramLinked, setTelegramLinked] = useState(false)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -24,11 +26,12 @@ export default function ProfilePage() {
 
       const { data } = await supabase
         .from('profiles')
-        .select('*')
+        .select('*, telegram_chat_id')
         .eq('id', user.id)
         .single()
 
       setProfile(data)
+      setTelegramLinked(!!data?.telegram_chat_id)
       setLoading(false)
     }
 
@@ -43,10 +46,24 @@ export default function ProfilePage() {
     )
   }
 
+  const refreshTelegramStatus = async () => {
+    const supabase = createClient()
+    const { data } = await supabase
+      .from('profiles')
+      .select('telegram_chat_id')
+      .eq('id', profile?.id)
+      .single()
+    setTelegramLinked(!!data?.telegram_chat_id)
+  }
+
   return (
-    <div>
-      <h1 className="mb-6 text-2xl font-bold">Мой профиль</h1>
+    <div className="space-y-6">
+      <h1 className="text-2xl font-bold">Мой профиль</h1>
       <ProfileForm profile={profile} />
+      <TelegramLink 
+        isLinked={telegramLinked} 
+        onStatusChange={refreshTelegramStatus} 
+      />
     </div>
   )
 }
