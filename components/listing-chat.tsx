@@ -195,6 +195,31 @@ export function ListingChat({ listing, currentUser }: ListingChatProps) {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
+  // Send Telegram notification (non-blocking)
+  const sendTelegramNotification = async (
+    recipientId: string,
+    messageContent: string
+  ) => {
+    // Don't notify if sending to self
+    if (recipientId === currentUser?.id) return
+
+    try {
+      await fetch('/api/telegram/notify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          recipientId,
+          senderName: currentUser?.display_name,
+          messagePreview: messageContent,
+          listingTitle: listing.title,
+          conversationId,
+        }),
+      })
+    } catch {
+      // Notification errors should not affect chat functionality
+    }
+  }
+
   const sendMessage = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!newMessage.trim() || !currentUser || sending) return
@@ -248,6 +273,14 @@ export function ListingChat({ listing, currentUser }: ListingChatProps) {
         .from('conversations')
         .update({ updated_at: new Date().toISOString() })
         .eq('id', convId)
+      
+      // Send Telegram notification to recipient (non-blocking)
+      const recipientId = isSeller 
+        ? selectedConversation?.buyer_id 
+        : sellerId
+      if (recipientId) {
+        sendTelegramNotification(recipientId, messageContent)
+      }
     }
 
     setSending(false)
