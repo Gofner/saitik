@@ -27,9 +27,11 @@ export async function approveListing(listingId: string) {
   // Get listing info before updating
   const { data: listing } = await adminClient
     .from('listings')
-    .select('id, title, price, category, images, user_id, profiles(display_name)')
+    .select('id, title, price, category_id, photos, user_id, profiles(display_name), categories(name)')
     .eq('id', listingId)
     .single()
+  
+  console.log('[approveListing] Listing data:', listing ? { id: listing.id, title: listing.title } : null)
 
   const { error } = await adminClient
     .from('listings')
@@ -43,15 +45,16 @@ export async function approveListing(listingId: string) {
   // Send Discord notification (non-blocking)
   if (listing) {
     const sellerProfile = listing.profiles as { display_name?: string } | null
+    const categoryData = listing.categories as { name?: string } | null
     sendListingApprovedWebhook({
       id: listing.id,
       title: listing.title,
       price: listing.price,
-      category: listing.category,
-      imageUrl: listing.images?.[0] || null,
+      category: categoryData?.name || 'Без категории',
+      imageUrl: listing.photos?.[0] || null,
       sellerName: sellerProfile?.display_name,
-    }).catch(() => {
-      // Ignore Discord errors
+    }).catch((err) => {
+      console.error('[approveListing] Discord webhook error:', err)
     })
   }
 
