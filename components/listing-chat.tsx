@@ -11,10 +11,13 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Send, Loader2, MessageCircle, ChevronLeft } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { formatMoscowTime } from '@/lib/time'
+import { OnlineStatus } from '@/components/online-status'
 
 interface ListingChatProps {
   listing: Listing
   currentUser: Profile | null
+  sellerProfile?: Profile | null
 }
 
 interface ConversationWithBuyer extends Conversation {
@@ -22,7 +25,7 @@ interface ConversationWithBuyer extends Conversation {
   unread_count?: number
 }
 
-export function ListingChat({ listing, currentUser }: ListingChatProps) {
+export function ListingChat({ listing, currentUser, sellerProfile }: ListingChatProps) {
   const searchParams = useSearchParams()
   const chatIdFromUrl = searchParams.get('chat')
   
@@ -74,7 +77,7 @@ export function ListingChat({ listing, currentUser }: ListingChatProps) {
         .from('conversations')
         .select(`
           *,
-          buyer:profiles!conversations_buyer_id_fkey(id, display_name, avatar_url)
+          buyer:profiles!conversations_buyer_id_fkey(id, display_name, avatar_url, last_seen_at)
         `)
         .eq('listing_id', listing.id)
         .eq('seller_id', currentUser.id)
@@ -321,27 +324,30 @@ export function ListingChat({ listing, currentUser }: ListingChatProps) {
       return (
         <Card className="border-border/50 bg-card">
           <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-8 w-8 p-0"
-                onClick={() => {
-                  setSelectedConversation(null)
-                  setConversationId(null)
-                  setMessages([])
-                }}
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-              <Avatar className="h-6 w-6">
-                <AvatarImage src={buyer?.avatar_url || undefined} />
-                <AvatarFallback className="text-xs">
-                  {buyer?.display_name?.[0]?.toUpperCase() || '?'}
-                </AvatarFallback>
-              </Avatar>
-              <span>Чат с {buyer?.display_name || 'покупателем'}</span>
-            </CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 w-8 p-0"
+                  onClick={() => {
+                    setSelectedConversation(null)
+                    setConversationId(null)
+                    setMessages([])
+                  }}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <Avatar className="h-6 w-6">
+                  <AvatarImage src={buyer?.avatar_url || undefined} />
+                  <AvatarFallback className="text-xs">
+                    {buyer?.display_name?.[0]?.toUpperCase() || '?'}
+                  </AvatarFallback>
+                </Avatar>
+                <span>Чат с {buyer?.display_name || 'покупателем'}</span>
+              </CardTitle>
+              <OnlineStatus lastSeenAt={buyer?.last_seen_at || null} />
+            </div>
           </CardHeader>
           <CardContent className="flex flex-col gap-3">
             <div className="flex h-64 flex-col gap-2 overflow-y-auto rounded-lg bg-background/50 p-3">
@@ -371,15 +377,23 @@ export function ListingChat({ listing, currentUser }: ListingChatProps) {
                           {sender?.display_name?.[0]?.toUpperCase() || '?'}
                         </AvatarFallback>
                       </Avatar>
-                      <div
-                        className={cn(
-                          'max-w-[75%] rounded-lg px-3 py-2 text-sm',
-                          isOwn
-                            ? 'bg-primary text-primary-foreground'
-                            : 'bg-muted'
-                        )}
-                      >
-                        {msg.content}
+                      <div className="flex flex-col">
+                        <div
+                          className={cn(
+                            'rounded-lg px-3 py-2 text-sm',
+                            isOwn
+                              ? 'bg-primary text-primary-foreground'
+                              : 'bg-muted'
+                          )}
+                        >
+                          {msg.content}
+                        </div>
+                        <span className={cn(
+                          'mt-1 text-[10px] text-muted-foreground',
+                          isOwn ? 'text-right' : 'text-left'
+                        )}>
+                          {formatMoscowTime(msg.created_at)}
+                        </span>
                       </div>
                     </div>
                   )
@@ -439,12 +453,13 @@ export function ListingChat({ listing, currentUser }: ListingChatProps) {
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex flex-1 flex-col">
-                    <span className="text-sm font-medium">
-                      {buyer?.display_name || 'Покупатель'}
-                    </span>
-                    <span className="text-xs text-muted-foreground">
-                      Нажмите, чтобы открыть чат
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium">
+                        {buyer?.display_name || 'Покупатель'}
+                      </span>
+                      <OnlineStatus lastSeenAt={buyer?.last_seen_at || null} showText={false} />
+                    </div>
+                    <OnlineStatus lastSeenAt={buyer?.last_seen_at || null} />
                   </div>
                   {conv.unread_count && conv.unread_count > 0 && (
                     <Badge variant="destructive">
@@ -464,10 +479,15 @@ export function ListingChat({ listing, currentUser }: ListingChatProps) {
   return (
     <Card className="border-border/50 bg-card">
       <CardHeader className="pb-3">
-        <CardTitle className="flex items-center gap-2 text-base">
-          <MessageCircle className="h-4 w-4" />
-          Чат с продавцом
-        </CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-2 text-base">
+            <MessageCircle className="h-4 w-4" />
+            Чат с продавцом
+          </CardTitle>
+          {sellerProfile && (
+            <OnlineStatus lastSeenAt={sellerProfile.last_seen_at} />
+          )}
+        </div>
       </CardHeader>
       <CardContent className="flex flex-col gap-3">
         <div className="flex h-64 flex-col gap-2 overflow-y-auto rounded-lg bg-background/50 p-3">
@@ -497,15 +517,23 @@ export function ListingChat({ listing, currentUser }: ListingChatProps) {
                       {sender?.display_name?.[0]?.toUpperCase() || '?'}
                     </AvatarFallback>
                   </Avatar>
-                  <div
-                    className={cn(
-                      'max-w-[75%] rounded-lg px-3 py-2 text-sm',
-                      isOwn
-                        ? 'bg-primary text-primary-foreground'
-                        : 'bg-muted'
-                    )}
-                  >
-                    {msg.content}
+                  <div className="flex flex-col">
+                    <div
+                      className={cn(
+                        'rounded-lg px-3 py-2 text-sm',
+                        isOwn
+                          ? 'bg-primary text-primary-foreground'
+                          : 'bg-muted'
+                      )}
+                    >
+                      {msg.content}
+                    </div>
+                    <span className={cn(
+                      'mt-1 text-[10px] text-muted-foreground',
+                      isOwn ? 'text-right' : 'text-left'
+                    )}>
+                      {formatMoscowTime(msg.created_at)}
+                    </span>
                   </div>
                 </div>
               )

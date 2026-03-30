@@ -21,12 +21,12 @@ export default async function ListingPage({
     .eq('id', id)
     .single()
 
-  // Fetch profile separately
+  // Fetch profile separately with last_seen_at
   let profile = null
   if (listing?.user_id) {
     const { data: profileData } = await supabase
       .from('profiles')
-      .select('*')
+      .select('*, last_seen_at')
       .eq('id', listing.user_id)
       .single()
     profile = profileData

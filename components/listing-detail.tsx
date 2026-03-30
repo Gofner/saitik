@@ -28,6 +28,7 @@ import {
 } from '@/components/ui/alert-dialog'
 import { CategoryIcon } from '@/components/category-icon'
 import { ListingChat } from '@/components/listing-chat'
+import { OnlineStatus } from '@/components/online-status'
 import { ChevronLeft, ChevronRight, ImageIcon, MessageCircle, Send, Trash2 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 
@@ -162,7 +163,7 @@ export function ListingDetail({ listing, profile }: { listing: Listing; profile:
 
           {/* Chat section */}
           <div className="mt-6">
-            <ListingChat listing={listing} currentUser={currentUser} />
+            <ListingChat listing={listing} currentUser={currentUser} sellerProfile={profile} />
           </div>
         </div>
 
@@ -220,16 +221,17 @@ export function ListingDetail({ listing, profile }: { listing: Listing; profile:
             <Card className="border-border/50 bg-card">
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary text-sm font-medium text-foreground">
+                  <div className="relative flex h-10 w-10 items-center justify-center rounded-full bg-secondary text-sm font-medium text-foreground">
                     {profile.display_name?.[0]?.toUpperCase() || '?'}
                   </div>
                   <div className="flex-1">
-                    <p className="text-sm font-medium text-foreground">
-                      {profile.display_name || 'Продавец'}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {'На площадке с '}{new Date(profile.created_at).toLocaleDateString('ru-RU', { month: 'long', year: 'numeric' })}
-                    </p>
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-medium text-foreground">
+                        {profile.display_name || 'Продавец'}
+                      </p>
+                      <OnlineStatus lastSeenAt={profile.last_seen_at} showText={false} />
+                    </div>
+                    <OnlineStatus lastSeenAt={profile.last_seen_at} className="mt-0.5" />
                   </div>
                 </div>
               </CardContent>
