@@ -2,6 +2,7 @@
 
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { sendListingApprovedWebhook } from '@/lib/discord'
 
 export async function approveListing(listingId: string) {
   const supabase = await createClient()
@@ -23,6 +24,13 @@ export async function approveListing(listingId: string) {
     return { error: 'Недостаточно прав' }
   }
 
+  // Get listing info before updating
+  const { data: listing } = await adminClient
+    .from('listings')
+    .select('id, title, price, category, images, user_id, profiles(display_name)')
+    .eq('id', listingId)
+    .single()
+
   const { error } = await adminClient
     .from('listings')
     .update({ status: 'active', updated_at: new Date().toISOString() })
@@ -30,6 +38,21 @@ export async function approveListing(listingId: string) {
 
   if (error) {
     return { error: error.message }
+  }
+
+  // Send Discord notification (non-blocking)
+  if (listing) {
+    const sellerProfile = listing.profiles as { display_name?: string } | null
+    sendListingApprovedWebhook({
+      id: listing.id,
+      title: listing.title,
+      price: listing.price,
+      category: listing.category,
+      imageUrl: listing.images?.[0] || null,
+      sellerName: sellerProfile?.display_name,
+    }).catch(() => {
+      // Ignore Discord errors
+    })
   }
 
   revalidatePath('/admin/moderation', 'page')

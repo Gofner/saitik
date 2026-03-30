@@ -11,6 +11,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Send, Loader2, MessageCircle, ChevronLeft } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { formatMoscowTime } from '@/lib/time'
 
 interface ListingChatProps {
   listing: Listing
@@ -371,15 +372,23 @@ export function ListingChat({ listing, currentUser }: ListingChatProps) {
                           {sender?.display_name?.[0]?.toUpperCase() || '?'}
                         </AvatarFallback>
                       </Avatar>
-                      <div
-                        className={cn(
-                          'max-w-[75%] rounded-lg px-3 py-2 text-sm',
-                          isOwn
-                            ? 'bg-primary text-primary-foreground'
-                            : 'bg-muted'
-                        )}
-                      >
-                        {msg.content}
+                      <div className="flex flex-col">
+                        <div
+                          className={cn(
+                            'rounded-lg px-3 py-2 text-sm',
+                            isOwn
+                              ? 'bg-primary text-primary-foreground'
+                              : 'bg-muted'
+                          )}
+                        >
+                          {msg.content}
+                        </div>
+                        <span className={cn(
+                          'mt-1 text-[10px] text-muted-foreground',
+                          isOwn ? 'text-right' : 'text-left'
+                        )}>
+                          {formatMoscowTime(msg.created_at)}
+                        </span>
                       </div>
                     </div>
                   )
@@ -497,15 +506,23 @@ export function ListingChat({ listing, currentUser }: ListingChatProps) {
                       {sender?.display_name?.[0]?.toUpperCase() || '?'}
                     </AvatarFallback>
                   </Avatar>
-                  <div
-                    className={cn(
-                      'max-w-[75%] rounded-lg px-3 py-2 text-sm',
-                      isOwn
-                        ? 'bg-primary text-primary-foreground'
-                        : 'bg-muted'
-                    )}
-                  >
-                    {msg.content}
+                  <div className="flex flex-col">
+                    <div
+                      className={cn(
+                        'rounded-lg px-3 py-2 text-sm',
+                        isOwn
+                          ? 'bg-primary text-primary-foreground'
+                          : 'bg-muted'
+                      )}
+                    >
+                      {msg.content}
+                    </div>
+                    <span className={cn(
+                      'mt-1 text-[10px] text-muted-foreground',
+                      isOwn ? 'text-right' : 'text-left'
+                    )}>
+                      {formatMoscowTime(msg.created_at)}
+                    </span>
                   </div>
                 </div>
               )
