@@ -18,7 +18,7 @@ export default function ProfilePage() {
     async function fetchProfile() {
       const supabase = createClient()
       const { data: { user } } = await supabase.auth.getUser()
-      
+
       if (!user) {
         router.push('/auth/login')
         return
@@ -53,16 +53,24 @@ export default function ProfilePage() {
       .select('telegram_chat_id')
       .eq('id', profile?.id)
       .single()
+
     setTelegramLinked(!!data?.telegram_chat_id)
   }
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Мой профиль</h1>
+    <div className="mx-auto w-full max-w-5xl space-y-5">
+      <div className="space-y-1">
+        <h1 className="text-2xl font-bold tracking-tight">Мой профиль</h1>
+        <p className="text-sm text-muted-foreground">
+          Управляйте информацией профиля и способами связи
+        </p>
+      </div>
+
       <ProfileForm profile={profile} />
-      <TelegramLink 
-        isLinked={telegramLinked} 
-        onStatusChange={refreshTelegramStatus} 
+
+      <TelegramLink
+        isLinked={telegramLinked}
+        onStatusChange={refreshTelegramStatus}
       />
     </div>
   )
