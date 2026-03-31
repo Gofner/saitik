@@ -58,20 +58,24 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-5xl space-y-5">
-      <div className="space-y-1">
-        <h1 className="text-2xl font-bold tracking-tight">Мой профиль</h1>
-        <p className="text-sm text-muted-foreground">
-          Управляйте информацией профиля и способами связи
-        </p>
+    <div className="flex min-h-[80vh] items-start justify-center pt-16">
+      <div className="w-full max-w-5xl space-y-5">
+
+        <div className="space-y-1">
+          <h1 className="text-2xl font-bold tracking-tight">Мой профиль</h1>
+          <p className="text-sm text-muted-foreground">
+            Управляйте информацией профиля и способами связи
+          </p>
+        </div>
+
+        <ProfileForm profile={profile} />
+
+        <TelegramLink
+          isLinked={telegramLinked}
+          onStatusChange={refreshTelegramStatus}
+        />
+
       </div>
-
-      <ProfileForm profile={profile} />
-
-      <TelegramLink
-        isLinked={telegramLinked}
-        onStatusChange={refreshTelegramStatus}
-      />
     </div>
   )
 }
