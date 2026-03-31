@@ -232,6 +232,3 @@ export function ProfileForm({ profile }: ProfileFormProps) {
     </form>
   )
 }
-Что это даст
-
-После замены:
