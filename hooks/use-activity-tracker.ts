@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from 'react'
 
-const ACTIVITY_INTERVAL = 60000 // Update every 60 seconds
+const ACTIVITY_INTERVAL = 60000
 
 export function useActivityTracker() {
   const lastUpdate = useRef<number>(0)
@@ -10,11 +10,11 @@ export function useActivityTracker() {
   useEffect(() => {
     const updateActivity = async () => {
       const now = Date.now()
-      // Prevent too frequent updates
+
       if (now - lastUpdate.current < ACTIVITY_INTERVAL) return
-      
+
       lastUpdate.current = now
-      
+
       try {
         await fetch('/api/user/activity', { method: 'POST' })
       } catch {
@@ -22,27 +22,37 @@ export function useActivityTracker() {
       }
     }
 
-    // Update on mount
-    updateActivity()
-
-    // Update on user interactions
-    const events = ['mousedown', 'keydown', 'touchstart', 'scroll']
-    
     const handleActivity = () => {
       updateActivity()
     }
 
-    events.forEach(event => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        updateActivity()
+      }
+    }
+
+    updateActivity()
+
+    const events = ['mousedown', 'keydown', 'touchstart', 'scroll']
+
+    events.forEach((event) => {
       window.addEventListener(event, handleActivity, { passive: true })
     })
 
-    // Also update periodically if user is active
-    const interval = setInterval(updateActivity, ACTIVITY_INTERVAL)
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+
+    const interval = setInterval(() => {
+      if (document.visibilityState === 'visible') {
+        updateActivity()
+      }
+    }, ACTIVITY_INTERVAL)
 
     return () => {
-      events.forEach(event => {
+      events.forEach((event) => {
         window.removeEventListener(event, handleActivity)
       })
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
       clearInterval(interval)
     }
   }, [])
