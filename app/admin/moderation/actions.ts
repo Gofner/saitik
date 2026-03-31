@@ -7,33 +7,54 @@ import { sendListingApprovedWebhook } from '@/lib/discord'
 export async function approveListing(listingId: string) {
   const supabase = await createClient()
   const adminClient = createAdminClient()
-  
+
   // Check if current user is admin/developer
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
     return { error: 'Не авторизован' }
   }
-  
+
   const { data: profile } = await adminClient
     .from('profiles')
     .select('role')
     .eq('id', user.id)
     .single()
-  
+
   if (!profile || !['admin', 'developer'].includes(profile.role)) {
     return { error: 'Недостаточно прав' }
   }
 
   // Get listing info before updating
-  const { data: listing } = await adminClient
+  const { data: listing, error: listingError } = await adminClient
     .from('listings')
-    .select('id, title, price, category, images, user_id, profiles(display_name)')
+    .select('id, title, price, photos, category_id, user_id')
     .eq('id', listingId)
+    .single()
+
+  if (listingError || !listing) {
+    return { error: listingError?.message || 'Объявление не найдено' }
+  }
+
+  // Get category name
+  const { data: category } = await adminClient
+    .from('categories')
+    .select('name')
+    .eq('id', listing.category_id)
+    .single()
+
+  // Get seller profile
+  const { data: sellerProfile } = await adminClient
+    .from('profiles')
+    .select('display_name')
+    .eq('id', listing.user_id)
     .single()
 
   const { error } = await adminClient
     .from('listings')
-    .update({ status: 'active', updated_at: new Date().toISOString() })
+    .update({
+      status: 'active',
+      updated_at: new Date().toISOString(),
+    })
     .eq('id', listingId)
 
   if (error) {
@@ -41,18 +62,17 @@ export async function approveListing(listingId: string) {
   }
 
   // Send Discord notification (non-blocking)
-  if (listing) {
-    const sellerProfile = listing.profiles as { display_name?: string } | null
-    sendListingApprovedWebhook({
+  try {
+    await sendListingApprovedWebhook({
       id: listing.id,
       title: listing.title,
       price: listing.price,
-      category: listing.category,
-      imageUrl: listing.images?.[0] || null,
-      sellerName: sellerProfile?.display_name,
-    }).catch(() => {
-      // Ignore Discord errors
+      category: category?.name || 'Без категории',
+      imageUrl: listing.photos?.[0] || null,
+      sellerName: sellerProfile?.display_name || 'Пользователь',
     })
+  } catch (err) {
+    console.error('[Discord] approveListing webhook error:', err)
   }
 
   revalidatePath('/admin/moderation', 'page')
@@ -65,19 +85,19 @@ export async function approveListing(listingId: string) {
 export async function rejectListing(listingId: string, reason?: string) {
   const supabase = await createClient()
   const adminClient = createAdminClient()
-  
+
   // Check if current user is admin/developer
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
     return { error: 'Не авторизован' }
   }
-  
+
   const { data: profile } = await adminClient
     .from('profiles')
     .select('role')
     .eq('id', user.id)
     .single()
-  
+
   if (!profile || !['admin', 'developer'].includes(profile.role)) {
     return { error: 'Недостаточно прав' }
   }
@@ -100,3 +120,4 @@ export async function rejectListing(listingId: string, reason?: string) {
   revalidatePath('/catalog', 'page')
   return { success: true }
 }
+lib/discord.ts
