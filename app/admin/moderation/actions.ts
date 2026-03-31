@@ -120,4 +120,3 @@ export async function rejectListing(listingId: string, reason?: string) {
   revalidatePath('/catalog', 'page')
   return { success: true }
 }
-lib/discord.ts
