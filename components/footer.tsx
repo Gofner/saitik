@@ -6,13 +6,17 @@ export function Footer() {
       <div className="mx-auto grid max-w-7xl grid-cols-[1fr_auto_1fr] items-center gap-4 px-4 py-8 text-sm text-muted-foreground lg:px-8">
         
         {/* Left */}
-        <div className="flex min-w-0 items-center gap-3">
+        <div className="flex min-w-0 items-center justify-between w-full">
+          
+          {/* Текст */}
           <span className="text-xs text-muted-foreground/60 leading-tight">
             Не является официальным ресурсом игры «Малиновка». <br />
             Создан по инициативе игроков.
           </span>
 
-          <div className="ml-2 flex shrink-0 items-center gap-2">
+          {/* Иконки */}
+          <div className="flex shrink-0 items-center gap-2 mr-2">
+            
             {/* Discord */}
             <a
               href="https://discord.gg/5qc9x5WAx8"
@@ -41,6 +45,7 @@ export function Footer() {
                 <path d="M120 0C53.7 0 0 53.7 0 120s53.7 120 120 120 120-53.7 120-120S186.3 0 120 0zm58.6 82.1-19.7 92.8c-1.5 6.6-5.5 8.2-11.1 5.1l-30.7-22.6-14.8 14.3c-1.6 1.6-3 3-6.1 3l2.2-31.4 57.1-51.6c2.5-2.2-.5-3.4-3.9-1.2l-70.6 44.4-30.4-9.5c-6.6-2.1-6.7-6.6 1.4-9.7l118.8-45.8c5.5-2 10.3 1.3 8.5 9.2z" />
               </svg>
             </a>
+
           </div>
         </div>
 
