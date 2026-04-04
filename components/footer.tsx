@@ -4,8 +4,10 @@ export function Footer() {
   return (
     <footer className="border-t border-border/50 bg-background">
       <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-4 py-8 text-sm text-muted-foreground md:flex-row lg:px-8">
-        {/* Left: socials + name */}
-        <div className="flex items-center gap-3">
+        
+        {/* Left: socials + disclaimer */}
+        <div className="flex flex-col gap-2 max-w-md md:flex-row md:items-center md:gap-3">
+          
           <div className="flex items-center gap-3">
             <a
               href="https://discord.gg/5qc9x5WAx8"
@@ -35,7 +37,9 @@ export function Footer() {
             </a>
           </div>
 
-
+          <span className="text-xs text-muted-foreground/60 leading-tight">
+            Не является официальным ресурсом игры «Малиновка». Создан по инициативе игроков
+          </span>
         </div>
 
         {/* Middle */}
@@ -46,7 +50,7 @@ export function Footer() {
         </nav>
 
         {/* Right */}
-        <p className="text-muted-foreground/60">{'MALMARKET \u00A9 2026'}</p>
+        <p className="text-muted-foreground/60">MALMARKET © 2026</p>
       </div>
     </footer>
   )
