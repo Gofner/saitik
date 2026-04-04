@@ -4,14 +4,16 @@ export function Footer() {
   return (
     <footer className="border-t border-border/50 bg-background">
       <div className="mx-auto grid max-w-7xl grid-cols-[1fr_auto_1fr] items-center gap-4 px-4 py-8 text-sm text-muted-foreground lg:px-8">
+        
         {/* Left */}
         <div className="flex min-w-0 items-center gap-3">
           <span className="text-xs text-muted-foreground/60 leading-tight">
-            Не является официальным ресурсом игры «Малиновка». 
+            Не является официальным ресурсом игры «Малиновка». <br />
             Создан по инициативе игроков.
           </span>
 
-          <div className="ml-2 flex shrink-0 items-center gap-3">
+          <div className="ml-2 flex shrink-0 items-center gap-2">
+            {/* Discord */}
             <a
               href="https://discord.gg/5qc9x5WAx8"
               target="_blank"
@@ -26,6 +28,7 @@ export function Footer() {
               </svg>
             </a>
 
+            {/* Telegram */}
             <a
               href="https://t.me/malinovka_hooligans"
               target="_blank"
