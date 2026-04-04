@@ -43,7 +43,7 @@ export function Footer() {
         </div>
 
         {/* Middle */}
-        <nav className="flex flex-1 justify-center translate-x-9">
+        <nav className="flex flex-1 justify-center translate-x-5">
           <Link href="/catalog" className="transition-colors hover:text-foreground">
             Каталог
           </Link>
